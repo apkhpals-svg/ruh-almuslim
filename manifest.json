@@ -13,8 +13,8 @@
   "orientation": "portrait",
   "lang": "ar",
   "dir": "rtl",
-  "background_color": "#0B2523",
-  "theme_color": "#F2F6F4",
+  "background_color": "#0B0D10",
+  "theme_color": "#0B0D10",
   "categories": [
     "books",
     "lifestyle"

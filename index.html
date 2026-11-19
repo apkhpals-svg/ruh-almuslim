@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap">
 <style>
 /* التصميم: تطبيق ذو عمود واحد بحجم الهاتف، أخضر عميق مع نحاسيّ دافئ للتمييز، بلا صور لكائنات حية */
 :root {
@@ -319,6 +319,72 @@ img{max-width:100%}
 @supports (min-height:100dvh){#app{min-height:100dvh}}
 @media (max-width:360px){body{font-size:16px}nav.tabs a{font-size:11.5px}}
 progress{accent-color:var(--primary)}
+
+/* ===== Luxe: فحمي #0B0D10 + زمردي #062920 + ذهبي مطفي #D4AF37 ===== */
+:root{--f-ui:"Cairo","IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;--f-display:var(--f-ui);--r:18px;
+--card-bg:var(--surface);--glow:linear-gradient(transparent,transparent);--hero-bg:linear-gradient(180deg,var(--surface),var(--surface2));--pattern:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><g fill='none' stroke='%2314524D' stroke-opacity='.09' stroke-width='1'><rect x='22' y='22' width='40' height='40'/><rect x='22' y='22' width='40' height='40' transform='rotate(45 42 42)'/><circle cx='42' cy='42' r='14'/><path d='M0 0l22 22M84 0L62 22M0 84l22-22M84 84L62 62'/></g></svg>");--arch:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70' fill='none' stroke='%2385590F' stroke-linecap='round'><path d='M8 70V38C8 16 28 6 50 2C72 6 92 16 92 38V70' stroke-width='1.3'/><path d='M16 70V40C16 22 32 13 50 9C68 13 84 22 84 40V70' stroke-width='.9' stroke-opacity='.55'/></svg>")}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0B0D10;--surface:#0E1613;--surface2:#12201B;--fg:#EFE9D8;--muted:#A5B0A8;--line:rgba(212,175,55,.2);--primary:#D4AF37;--on-primary:#0B0D10;--accent:#D4AF37;--accent-soft:rgba(212,175,55,.13);--frame:#8C7326;--paper:#0E1613;--ok:#5CC48F;--warn:#E89A5C;--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 30px rgba(0,0,0,.45);--card-bg:linear-gradient(155deg,rgba(6,41,32,.62) 0%,rgba(14,22,19,.96) 62%);--glow:radial-gradient(130% 55% at 50% -8%,rgba(6,41,32,.95),rgba(6,41,32,0) 70%);--hero-bg:radial-gradient(110% 120% at 50% 0%,rgba(6,41,32,.95),rgba(11,13,16,.25) 78%);--pattern:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><g fill='none' stroke='%23D4AF37' stroke-opacity='.07' stroke-width='1'><rect x='22' y='22' width='40' height='40'/><rect x='22' y='22' width='40' height='40' transform='rotate(45 42 42)'/><circle cx='42' cy='42' r='14'/><path d='M0 0l22 22M84 0L62 22M0 84l22-22M84 84L62 62'/></g></svg>");--arch:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70' fill='none' stroke='%23D4AF37' stroke-linecap='round'><path d='M8 70V38C8 16 28 6 50 2C72 6 92 16 92 38V70' stroke-width='1.3'/><path d='M16 70V40C16 22 32 13 50 9C68 13 84 22 84 40V70' stroke-width='.9' stroke-opacity='.55'/></svg>"); color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0B0D10;--surface:#0E1613;--surface2:#12201B;--fg:#EFE9D8;--muted:#A5B0A8;--line:rgba(212,175,55,.2);--primary:#D4AF37;--on-primary:#0B0D10;--accent:#D4AF37;--accent-soft:rgba(212,175,55,.13);--frame:#8C7326;--paper:#0E1613;--ok:#5CC48F;--warn:#E89A5C;--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 30px rgba(0,0,0,.45);--card-bg:linear-gradient(155deg,rgba(6,41,32,.62) 0%,rgba(14,22,19,.96) 62%);--glow:radial-gradient(130% 55% at 50% -8%,rgba(6,41,32,.95),rgba(6,41,32,0) 70%);--hero-bg:radial-gradient(110% 120% at 50% 0%,rgba(6,41,32,.95),rgba(11,13,16,.25) 78%);--pattern:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><g fill='none' stroke='%23D4AF37' stroke-opacity='.07' stroke-width='1'><rect x='22' y='22' width='40' height='40'/><rect x='22' y='22' width='40' height='40' transform='rotate(45 42 42)'/><circle cx='42' cy='42' r='14'/><path d='M0 0l22 22M84 0L62 22M0 84l22-22M84 84L62 62'/></g></svg>");--arch:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70' fill='none' stroke='%23D4AF37' stroke-linecap='round'><path d='M8 70V38C8 16 28 6 50 2C72 6 92 16 92 38V70' stroke-width='1.3'/><path d='M16 70V40C16 22 32 13 50 9C68 13 84 22 84 40V70' stroke-width='.9' stroke-opacity='.55'/></svg>"); color-scheme:dark}
+html{background:var(--bg)}
+body{background:var(--glow),var(--pattern),var(--bg);font-family:var(--f-ui)}
+.top{background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.top h1{font-weight:800;color:var(--accent)}
+.iconbtn{border-radius:14px;background:var(--card-bg)}
+.card,.tile{background:var(--card-bg);border-color:var(--line);border-radius:20px}
+.card{box-shadow:var(--shadow)}
+.label{color:var(--accent);font-weight:600;font-size:13px;letter-spacing:.02em}
+.hero{position:relative;overflow:hidden;padding:30px 14px 18px;border-radius:26px 26px 20px 20px;border:1px solid rgba(212,175,55,.38);background:var(--hero-bg),var(--pattern);box-shadow:var(--shadow)}
+.hero::before{content:"";position:absolute;left:50%;top:-2px;width:150px;height:105px;transform:translateX(-50%);background:var(--arch) center/contain no-repeat;opacity:.4;pointer-events:none}
+.hero>*{position:relative}
+.hero .hijri{color:var(--accent);font-weight:800;font-size:27px}
+.hero .greg{color:var(--muted)}
+.card.next{background:radial-gradient(120% 150% at 50% 0%,#0F4C3B 0%,#062920 52%,#0B0D10 100%);color:#F4EFD9;border:1px solid rgba(212,175,55,.55);box-shadow:0 0 0 1px rgba(212,175,55,.08) inset,0 14px 34px rgba(0,0,0,.4);padding:22px 18px}
+.card.next .label{color:rgba(244,239,217,.72)}
+.card.next .pname{color:#D4AF37;font-weight:800;font-size:38px;line-height:1.25}
+.card.next .tnum{font-size:18px;opacity:.9}
+.card.next .cd{display:inline-block;margin-top:12px;padding:6px 20px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(0,0,0,.32);color:#D4AF37;font-size:24px;font-weight:700;letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.card.times{flex-direction:row;gap:3px;padding:12px 6px}
+.trow{flex:1 1 0;min-width:0;flex-direction:column;justify-content:center;gap:6px;min-height:0;padding:10px 2px;border:1px solid transparent;border-radius:16px;font-size:clamp(11px,3.3vw,13px);color:var(--muted);text-align:center}
+.trow:last-child{border:1px solid transparent}
+.trow.now{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);padding-inline:2px}
+.trow .tm{font-size:clamp(12px,3.6vw,14.5px);color:var(--fg);font-weight:700}
+.trow.now .tm{color:var(--accent)}
+.trow::before{content:"";width:20px;height:20px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+.trow[data-k=fajr]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0M12 5v3M4.6 9.6l1.9 1.9M19.4 9.6l-1.9 1.9'/></svg>")}
+.trow[data-k=sunrise]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M3 18h18M7 18a5 5 0 0 1 10 0M12 3v6M9.5 5.5L12 3l2.5 2.5'/></svg>")}
+.trow[data-k=dhuhr]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='4'/><path d='M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8'/></svg>")}
+.trow[data-k=asr]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='9' cy='9' r='3'/><path d='M9 3v1.5M3 9h1.5M4.8 4.8l1 1M13.2 4.8l-1 1M8 20h9a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.4 1.2A3 3 0 0 0 8 20z'/></svg>")}
+.trow[data-k=maghrib]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M3 16h18M5 20h14M7 16a5 5 0 0 1 10 0M12 8V5.5M4.8 10.2l1.7 1.3M19.2 10.2l-1.7 1.3'/></svg>")}
+.trow[data-k=isha]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'/></svg>")}
+.hsec{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;margin:6px 2px -2px}
+.hsec::before,.hsec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--frame),transparent)}
+.tile{min-height:108px;padding:16px;gap:8px;transition:transform .15s,border-color .15s}
+.tile:active{transform:scale(.97)}
+.tile svg,.tile .emo{width:46px;height:46px;padding:11px;box-sizing:border-box;border-radius:14px;background:var(--accent-soft);border:1px solid var(--line)}
+.tile .emo{display:grid;place-items:center;font-size:24px;padding:0}
+.tile b{font-weight:700;font-size:16.5px}
+@media (hover:hover){.tile:hover{border-color:var(--accent)}}
+nav.tabs{background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:700;box-shadow:inset 0 0 0 1px var(--line)}
+
+/* ===== تنبيهات داخل التطبيق: واحد في كل مرة، صغير وأنيق ===== */
+#toast{top:calc(env(safe-area-inset-top,0px) + 8px);padding:0 12px;gap:0}
+.toast{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;max-width:440px;width:100%;padding:10px 10px 13px 12px;border-radius:18px;color:var(--fg);background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45);transform:translateY(-140%);opacity:0;transition:transform .32s cubic-bezier(.2,.9,.3,1),opacity .25s}
+.toast.in{transform:none;opacity:1}
+.toast.out{position:absolute;transform:translateY(-140%);opacity:0}
+.toast .ticon{flex:none;width:38px;height:38px;border-radius:12px;background-color:var(--accent-soft);border:1px solid var(--line);position:relative}
+.toast .ticon::after{content:"";position:absolute;inset:8px;background:var(--accent);-webkit-mask:var(--bell) center/contain no-repeat;mask:var(--bell) center/contain no-repeat}
+.toast.adhan .ticon::after{-webkit-mask-image:var(--moon);mask-image:var(--moon)}
+.toast .tbody{flex:1;min-width:0}
+.toast b{display:block;font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--accent);line-height:1.4}
+.toast span{display:block;font-size:13px;color:var(--muted);line-height:1.5;max-height:3em;overflow:hidden}
+.toast .tx{flex:none;width:30px;height:30px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:22px;line-height:1}
+.toast .tbar{position:absolute;inset-inline:0;bottom:0;height:3px;background:var(--accent);opacity:.85;transform-origin:right;animation:tbar linear forwards}
+.toast.adhan{border-color:rgba(212,175,55,.6);background:radial-gradient(120% 160% at 50% 0%,rgba(15,76,59,.96),rgba(6,41,32,.96))}
+.toast.adhan b{font-size:16.5px}
+@keyframes tbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}.toast .tbar{animation:none}}
+:root{--bell:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9M10 20a2 2 0 0 0 4 0'/></svg>");--moon:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'/></svg>")}
 </style>
 
 </head>
@@ -568,34 +634,256 @@ var RC = (function () {
   var RUQYA_BOOK = chaps([45, 48, 49, 124, 125, 126, 128], true);
 
   var HADITH = [
-    { cat: "الإيمان والنية", n: "عمر بن الخطاب", t: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ فَهِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ، وَمَنْ كَانَتْ هِجْرَتُهُ لِدُنْيَا يُصِيبُهَا أَوِ امْرَأَةٍ يَنْكِحُهَا فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ", b: 1, m: 1907 },
-    { cat: "الإيمان والنية", n: "أنس بن مالك", t: "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ", b: 13, m: 45 },
-    { cat: "الإيمان والنية", n: "أبي هريرة", t: "إِنَّ اللَّهَ لَا يَنْظُرُ إِلَى صُوَرِكُمْ وَأَمْوَالِكُمْ، وَلَكِنْ يَنْظُرُ إِلَى قُلُوبِكُمْ وَأَعْمَالِكُمْ", m: 2564 },
-    { cat: "الإيمان والنية", n: "تميم الداري", raw: "«الدِّينُ النَّصِيحَةُ»، قُلْنَا: لِمَنْ؟ قَالَ: «لِلَّهِ وَلِكِتَابِهِ وَلِرَسُولِهِ وَلِأَئِمَّةِ الْمُسْلِمِينَ وَعَامَّتِهِمْ»", m: 55 },
-    { cat: "الأخلاق", n: "أبي هريرة", t: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُكْرِمْ جَارَهُ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُكْرِمْ ضَيْفَهُ", b: 6018, m: 47 },
-    { cat: "الأخلاق", n: "عبد الله بن عمرو", t: "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ", b: 10, m: 40 },
-    { cat: "الأخلاق", n: "أبي هريرة", t: "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ", b: 6114, m: 2609 },
-    { cat: "الأخلاق", n: "أنس بن مالك", t: "مَنْ أَحَبَّ أَنْ يُبْسَطَ لَهُ فِي رِزْقِهِ، وَيُنْسَأَ لَهُ فِي أَثَرِهِ، فَلْيَصِلْ رَحِمَهُ", b: 5985, m: 2557 },
-    { cat: "الصدقة والخير", n: "أبي هريرة", t: "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ", b: 2989, m: 1009 },
-    { cat: "الصدقة والخير", n: "جابر بن عبد الله", t: "كُلُّ مَعْرُوفٍ صَدَقَةٌ", b: 6021, m: 1005 },
-    { cat: "الصدقة والخير", n: "عدي بن حاتم", t: "اتَّقُوا النَّارَ وَلَوْ بِشِقِّ تَمْرَةٍ", b: 1417, m: 1016 },
-    { cat: "الصدقة والخير", n: "أبي مسعود الأنصاري", t: "مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ", m: 1893 },
-    { cat: "الصدقة والخير", n: "أبي هريرة", t: "مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ، وَمَا زَادَ اللَّهُ عَبْدًا بِعَفْوٍ إِلَّا عِزًّا، وَمَا تَوَاضَعَ أَحَدٌ لِلَّهِ إِلَّا رَفَعَهُ اللَّهُ", m: 2588 },
-    { cat: "الذكر", n: "أبي هريرة", t: "كَلِمَتَانِ خَفِيفَتَانِ عَلَى اللِّسَانِ، ثَقِيلَتَانِ فِي الْمِيزَانِ، حَبِيبَتَانِ إِلَى الرَّحْمَنِ: سُبْحَانَ اللَّهِ الْعَظِيمِ، سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", b: 6406, m: 2694 },
-    { cat: "الذكر", n: "أبي هريرة", t: "مَنْ قَالَ: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَإِنْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ", b: 6405, m: 2691 },
-    { cat: "الذكر", n: "أبي هريرة", t: "مَنْ صَلَّى عَلَيَّ صَلَاةً صَلَّى اللَّهُ عَلَيْهِ بِهَا عَشْرًا", m: 408 },
-    { cat: "الذكر", n: "أبي مالك الأشعري", t: "الطُّهُورُ شَطْرُ الْإِيمَانِ، وَالْحَمْدُ لِلَّهِ تَمْلَأُ الْمِيزَانَ، وَسُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ تَمْلَآنِ - أَوْ تَمْلَأُ - مَا بَيْنَ السَّمَاوَاتِ وَالْأَرْضِ، وَالصَّلَاةُ نُورٌ، وَالصَّدَقَةُ بُرْهَانٌ، وَالصَّبْرُ ضِيَاءٌ، وَالْقُرْآنُ حُجَّةٌ لَكَ أَوْ عَلَيْكَ", m: 223 },
-    { cat: "القرآن والعلم", n: "عثمان بن عفان", t: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", b: 5027 },
-    { cat: "القرآن والعلم", n: "عائشة", f: 1, t: "الَّذِي يَقْرَأُ الْقُرْآنَ وَهُوَ مَاهِرٌ بِهِ مَعَ السَّفَرَةِ الْكِرَامِ الْبَرَرَةِ، وَالَّذِي يَقْرَأُ الْقُرْآنَ وَيَتَتَعْتَعُ فِيهِ وَهُوَ عَلَيْهِ شَاقٌّ لَهُ أَجْرَانِ", b: 4937, m: 798 },
-    { cat: "القرآن والعلم", n: "أبي هريرة", t: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ", m: 2699 },
-    { cat: "الصلاة والعبادة", n: "أبي موسى الأشعري", t: "مَنْ صَلَّى الْبَرْدَيْنِ دَخَلَ الْجَنَّةَ", b: 574, m: 635 },
-    { cat: "الصلاة والعبادة", n: "أبي هريرة", t: "أَقْرَبُ مَا يَكُونُ الْعَبْدُ مِنْ رَبِّهِ وَهُوَ سَاجِدٌ، فَأَكْثِرُوا الدُّعَاءَ", m: 482 },
-    { cat: "الصلاة والعبادة", n: "عائشة", f: 1, t: "أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ", b: 6464, m: 783 },
-    { cat: "الصلاة والعبادة", n: "أبي هريرة", t: "مَنْ قَامَ رَمَضَانَ إِيمَانًا وَاحْتِسَابًا غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ", b: 37, m: 759 },
-    { cat: "الصلاة والعبادة", n: "أبي أيوب الأنصاري", t: "مَنْ صَامَ رَمَضَانَ ثُمَّ أَتْبَعَهُ سِتًّا مِنْ شَوَّالٍ كَانَ كَصِيَامِ الدَّهْرِ", m: 1164 }
-  ];
+  {
+    "cat": "الإيمان والنية",
+    "n": "عمر بن الخطاب",
+    "t": "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ فَهِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ، وَمَنْ كَانَتْ هِجْرَتُهُ لِدُنْيَا يُصِيبُهَا أَوِ امْرَأَةٍ يَنْكِحُهَا فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ",
+    "b": 1,
+    "m": 1907,
+    "w": "اللفظ كما في رياض الصالحين"
+  },
+  {
+    "cat": "الإيمان والنية",
+    "n": "أنس بن مالك",
+    "t": "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
+    "b": 13,
+    "m": 45
+  },
+  {
+    "cat": "الإيمان والنية",
+    "n": "أبي هريرة",
+    "t": "إِنَّ اللَّهَ لَا يَنْظُرُ إِلَى صُوَرِكُمْ وَأَمْوَالِكُمْ، وَلَكِنْ يَنْظُرُ إِلَى قُلُوبِكُمْ وَأَعْمَالِكُمْ",
+    "m": 2564
+  },
+  {
+    "cat": "الإيمان والنية",
+    "n": "تميم الداري",
+    "raw": "«الدِّينُ النَّصِيحَةُ»، قُلْنَا: لِمَنْ؟ قَالَ: «لِلَّهِ وَلِكِتَابِهِ وَلِرَسُولِهِ وَلِأَئِمَّةِ الْمُسْلِمِينَ وَعَامَّتِهِمْ»",
+    "m": 55
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "أبي هريرة",
+    "t": "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُكْرِمْ جَارَهُ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُكْرِمْ ضَيْفَهُ",
+    "b": 6018,
+    "m": 47,
+    "w": "واللفظ لمسلم"
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "عبد الله بن عمرو",
+    "t": "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ",
+    "b": 10,
+    "m": 40,
+    "w": "واللفظ للبخاري"
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "أبي هريرة",
+    "t": "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ",
+    "b": 6114,
+    "m": 2609
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "أنس بن مالك",
+    "t": "مَنْ أَحَبَّ أَنْ يُبْسَطَ لَهُ فِي رِزْقِهِ، وَيُنْسَأَ لَهُ فِي أَثَرِهِ، فَلْيَصِلْ رَحِمَهُ",
+    "b": 5985,
+    "m": 2557
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "أبي هريرة",
+    "t": "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ",
+    "b": 2989,
+    "m": 1009
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "جابر بن عبد الله",
+    "t": "كُلُّ مَعْرُوفٍ صَدَقَةٌ",
+    "b": 6021,
+    "m": 1005,
+    "w": "ورواه مسلم من حديث حذيفة رضي الله عنه"
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "عدي بن حاتم",
+    "t": "اتَّقُوا النَّارَ وَلَوْ بِشِقِّ تَمْرَةٍ",
+    "b": 1417,
+    "m": 1016
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "أبي مسعود الأنصاري",
+    "t": "مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ",
+    "m": 1893
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "أبي هريرة",
+    "t": "مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ، وَمَا زَادَ اللَّهُ عَبْدًا بِعَفْوٍ إِلَّا عِزًّا، وَمَا تَوَاضَعَ أَحَدٌ لِلَّهِ إِلَّا رَفَعَهُ اللَّهُ",
+    "m": 2588
+  },
+  {
+    "cat": "الذكر",
+    "n": "أبي هريرة",
+    "t": "كَلِمَتَانِ خَفِيفَتَانِ عَلَى اللِّسَانِ، ثَقِيلَتَانِ فِي الْمِيزَانِ، حَبِيبَتَانِ إِلَى الرَّحْمَنِ: سُبْحَانَ اللَّهِ الْعَظِيمِ، سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+    "b": 6406,
+    "m": 2694,
+    "w": "واللفظ للبخاري"
+  },
+  {
+    "cat": "الذكر",
+    "n": "أبي هريرة",
+    "t": "مَنْ قَالَ: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَإِنْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ",
+    "b": 6405,
+    "m": 2691,
+    "w": "واللفظ للبخاري"
+  },
+  {
+    "cat": "الذكر",
+    "n": "أبي هريرة",
+    "t": "مَنْ صَلَّى عَلَيَّ صَلَاةً صَلَّى اللَّهُ عَلَيْهِ بِهَا عَشْرًا",
+    "m": 408
+  },
+  {
+    "cat": "الذكر",
+    "n": "أبي مالك الأشعري",
+    "t": "الطُّهُورُ شَطْرُ الْإِيمَانِ، وَالْحَمْدُ لِلَّهِ تَمْلَأُ الْمِيزَانَ، وَسُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ تَمْلَآنِ - أَوْ تَمْلَأُ - مَا بَيْنَ السَّمَاوَاتِ وَالْأَرْضِ، وَالصَّلَاةُ نُورٌ، وَالصَّدَقَةُ بُرْهَانٌ، وَالصَّبْرُ ضِيَاءٌ، وَالْقُرْآنُ حُجَّةٌ لَكَ أَوْ عَلَيْكَ",
+    "m": 223
+  },
+  {
+    "cat": "القرآن والعلم",
+    "n": "عثمان بن عفان",
+    "t": "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
+    "b": 5027
+  },
+  {
+    "cat": "القرآن والعلم",
+    "n": "عائشة",
+    "f": 1,
+    "t": "الَّذِي يَقْرَأُ الْقُرْآنَ وَهُوَ مَاهِرٌ بِهِ مَعَ السَّفَرَةِ الْكِرَامِ الْبَرَرَةِ، وَالَّذِي يَقْرَأُ الْقُرْآنَ وَيَتَتَعْتَعُ فِيهِ وَهُوَ عَلَيْهِ شَاقٌّ لَهُ أَجْرَانِ",
+    "b": 4937,
+    "m": 798,
+    "w": "اللفظ كما في رياض الصالحين"
+  },
+  {
+    "cat": "القرآن والعلم",
+    "n": "أبي هريرة",
+    "t": "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ",
+    "m": 2699
+  },
+  {
+    "cat": "الصلاة والعبادة",
+    "n": "أبي موسى الأشعري",
+    "t": "مَنْ صَلَّى الْبَرْدَيْنِ دَخَلَ الْجَنَّةَ",
+    "b": 574,
+    "m": 635
+  },
+  {
+    "cat": "الصلاة والعبادة",
+    "n": "أبي هريرة",
+    "t": "أَقْرَبُ مَا يَكُونُ الْعَبْدُ مِنْ رَبِّهِ وَهُوَ سَاجِدٌ، فَأَكْثِرُوا الدُّعَاءَ",
+    "m": 482
+  },
+  {
+    "cat": "الصلاة والعبادة",
+    "n": "عائشة",
+    "f": 1,
+    "t": "أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ تَعَالَى أَدْوَمُهَا وَإِنْ قَلَّ",
+    "b": 6465,
+    "m": 783,
+    "w": "واللفظ لمسلم"
+  },
+  {
+    "cat": "الصلاة والعبادة",
+    "n": "أبي هريرة",
+    "t": "مَنْ قَامَ رَمَضَانَ إِيمَانًا وَاحْتِسَابًا غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ",
+    "b": 37,
+    "m": 759
+  },
+  {
+    "cat": "الصلاة والعبادة",
+    "n": "أبي أيوب الأنصاري",
+    "t": "مَنْ صَامَ رَمَضَانَ ثُمَّ أَتْبَعَهُ سِتًّا مِنْ شَوَّالٍ كَانَ كَصِيَامِ الدَّهْرِ",
+    "m": 1164
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "أبي هريرة",
+    "t": "مَنْ لاَ يَرْحَمُ لاَ يُرْحَمُ",
+    "s": "متفق عليه — رياض الصالحين"
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "أبي موسى",
+    "t": "الْمُؤْمِنُ لِلْمُؤْمِنِ كَالْبُنْيَانِ يَشُدُّ بَعْضُهُ بَعْضًا",
+    "s": "متفق عليه — رياض الصالحين"
+  },
+  {
+    "cat": "الإيمان والنية",
+    "n": "أبي هريرة",
+    "t": "الْمُؤْمِنُ الْقَوِيُّ خَيْرٌ وَأَحَبُّ إِلَى اللَّهِ مِنَ الْمُؤْمِنِ الضَّعِيفِ وَفِي كُلٍّ خَيْرٌ احْرِصْ عَلَى مَا يَنْفَعُكَ وَاسْتَعِنْ بِاللَّهِ وَلاَ تَعْجِزْ وَإِنْ أَصَابَكَ شَىْءٌ فَلاَ تَقُلْ لَوْ أَنِّي فَعَلْتُ كَانَ كَذَا وَكَذَا . وَلَكِنْ قُلْ قَدَرُ اللَّهِ وَمَا شَاءَ فَعَلَ فَإِنَّ لَوْ تَفْتَحُ عَمَلَ الشَّيْطَانِ",
+    "s": "رواه مسلم — رياض الصالحين"
+  },
+  {
+    "cat": "الإيمان والنية",
+    "n": "أبي هريرة",
+    "t": "الدُّنْيَا سِجْنُ الْمُؤْمِنِ وَجَنَّةُ الْكَافِرِ",
+    "s": "رواه مسلم — رياض الصالحين"
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "جابر",
+    "t": "اتَّقُوا الظُّلْمَ فَإِنَّ الظُّلْمَ ظُلُمَاتٌ يَوْمَ الْقِيَامَةِ وَاتَّقُوا الشُّحَّ فَإِنَّ الشُّحَّ أَهْلَكَ مَنْ كَانَ قَبْلَكُمْ حَمَلَهُمْ عَلَى أَنْ سَفَكُوا دِمَاءَهُمْ وَاسْتَحَلُّوا مَحَارِمَهُمْ",
+    "s": "رواه مسلم — رياض الصالحين"
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "عبد الله بن عمرو",
+    "t": "لَيْسَ الْوَاصِلُ بِالْمُكَافِئِ، وَلَكِنِ الْوَاصِلُ الَّذِي إِذَا قَطَعَتْ رَحِمُهُ وَصَلَهَا",
+    "s": "رواه البخاري — رياض الصالحين"
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "عائشة",
+    "t": "لاَ تَسُبُّوا الأَمْوَاتَ فَإِنَّهُمْ قَدْ أَفْضَوْا إِلَى مَا قَدَّمُوا",
+    "s": "رواه البخاري — رياض الصالحين",
+    "f": 1
+  },
+  {
+    "cat": "الأخلاق",
+    "n": "أبي هريرة",
+    "t": "لاَ يَنْبَغِي لِصِدِّيقٍ أَنْ يَكُونَ لَعَّانًا",
+    "s": "رواه مسلم — رياض الصالحين"
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "سهل بن سعد",
+    "t": "أَنَا وَكَافِلُ الْيَتِيمِ فِي الْجَنَّةِ هَكَذَا",
+    "s": "رواه البخاري — رياض الصالحين"
+  },
+  {
+    "cat": "الصدقة والخير",
+    "n": "أبي هريرة",
+    "t": "مَا مِنْ يَوْمٍ يُصْبِحُ الْعِبَادُ فِيهِ إِلاَّ مَلَكَانِ يَنْزِلاَنِ فَيَقُولُ أَحَدُهُمَا اللَّهُمَّ أَعْطِ مُنْفِقًا خَلَفًا، وَيَقُولُ الآخَرُ اللَّهُمَّ أَعْطِ مُمْسِكًا تَلَفًا",
+    "s": "متفق عليه — رياض الصالحين"
+  },
+  {
+    "cat": "الصلاة والعبادة",
+    "n": "عثمان بن عفان",
+    "t": "مَنْ تَوَضَّأَ فَأَحْسَنَ الْوُضُوءَ خَرَجَتْ خَطَايَاهُ مِنْ جَسَدِهِ حَتَّى تَخْرُجَ مِنْ تَحْتِ أَظْفَارِهِ",
+    "s": "رواه مسلم — رياض الصالحين"
+  },
+  {
+    "cat": "القرآن والعلم",
+    "n": "ابن عمر",
+    "t": "لاَ حَسَدَ إِلاَّ فِي اثْنَتَيْنِ رَجُلٌ آتَاهُ اللَّهُ الْقُرْآنَ فَهُوَ يَقُومُ بِهِ آنَاءَ اللَّيْلِ وَآنَاءَ النَّهَارِ وَرَجُلٌ آتَاهُ اللَّهُ مَالاً فَهُوَ يُنْفِقُهُ آنَاءَ اللَّيْلِ وَآنَاءَ النَّهَارِ",
+    "s": "متفق عليه — رياض الصالحين"
+  }
+];
 
-  /* ===== الأدعية ===== */
   var DUAS = {
     sunna: DUA_BOOK,
     quran: [
@@ -900,15 +1188,42 @@ function playAlert(kind) {
   if (kind === 'adhan' && ADHAN_URL) { try { var a = new Audio(ADHAN_URL); a.play().catch(chime); return; } catch (e) {} }
   chime();
 }
+var TQ = [], TCUR = null, TTMR = null, TLAST = 0;
+function sysNotify(title, body, kind) {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    var o = { body: body || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: 'ruh-' + (kind || 'n'), renotify: true, dir: 'rtl', lang: 'ar', vibrate: kind === 'adhan' ? [300, 150, 300] : [120], requireInteraction: kind === 'adhan', data: { url: './' } };
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) navigator.serviceWorker.getRegistration().then(function (r) { if (r && r.showNotification) r.showNotification(title, o); else new Notification(title, o); }, function () {});
+    else new Notification(title, o);
+  } catch (e) {}
+}
+function toastDismiss(next) {
+  var c = TCUR; if (!c) return; TCUR = null; clearTimeout(TTMR);
+  c.el.classList.remove('in'); c.el.classList.add('out');
+  setTimeout(function () { if (c.el.parentNode) c.el.parentNode.removeChild(c.el); if (next !== false) setTimeout(toastNext, 120); }, 280);
+}
+function toastNext() {
+  if (TCUR) return;
+  var it = TQ.shift(); if (!it) return;
+  var el = document.createElement('div'), dur = it.kind === 'adhan' ? 20000 : 6500;
+  el.className = 'toast' + (it.kind === 'adhan' ? ' adhan' : ''); el.setAttribute('role', 'status');
+  el.innerHTML = '<i class="ticon" aria-hidden="true"></i><div class="tbody"><b>' + esc(it.title) + '</b>' + (it.body ? '<span>' + esc(it.body) + '</span>' : '') + '</div><button class="tx" aria-label="إغلاق">×</button><u class="tbar" style="animation-duration:' + dur + 'ms"></u>';
+  $('#toast').appendChild(el);
+  requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('in'); }); });
+  TCUR = { el: el, kind: it.kind }; TTMR = setTimeout(toastDismiss, dur);
+  el.addEventListener('click', function () { toastDismiss(); });
+  var y0 = null; el.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', function (e) { if (y0 !== null && e.changedTouches[0].clientY - y0 < -24) toastDismiss(); y0 = null; }, { passive: true });
+  playAlert(it.kind);
+}
 function toast(title, body, kind) {
-  var box = $('#toast'), el = document.createElement('div');
-  el.className = 'toast'; el.setAttribute('role', 'status');
-  el.innerHTML = '<b>' + esc(title) + '</b>' + (body ? '<span>' + esc(body) + '</span>' : '');
-  box.appendChild(el);
-  setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, kind === 'adhan' ? 20000 : 8000);
-  el.addEventListener('click', function () { if (el.parentNode) el.parentNode.removeChild(el); });
-  try { if ('Notification' in window && Notification.permission === 'granted') new Notification(title, { body: body || '' }); } catch (e) {}
-  playAlert(kind);
+  var it = { title: title, body: body, kind: kind || 'n' };
+  TLAST = Date.now();
+  TQ = TQ.filter(function (x) { return x.title !== title; });
+  if (it.kind === 'adhan') { TQ.unshift(it); if (TCUR && TCUR.kind !== 'adhan') toastDismiss(false); }
+  else { TQ.push(it); while (TQ.length > 3) TQ.shift(); }
+  toastNext();
+  if (document.hidden || it.kind === 'adhan') sysNotify(title, body, it.kind);
 }
 function vib(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
 
@@ -961,11 +1276,11 @@ function dayEvents(tt) {
 function tick() {
   var now = Date.now(), tt = todayTimes(), fd = S.fired[tt.key] || (S.fired[tt.key] = {}), changed = false;
   dayEvents(tt).forEach(function (e) {
-    if (!fd[e.key] && now >= e.at && now - e.at <= 120000) { fd[e.key] = 1; changed = true; toast(e.title, e.body, e.kind); }
+    if (!fd[e.key] && now >= e.at && now - e.at <= 600000) { fd[e.key] = 1; changed = true; var late = now - e.at > 120000; toast(e.title, (late ? 'قبل ' + ar(Math.round((now - e.at) / 60000)) + ' دقيقة. ' : '') + e.body, late ? 'n' : e.kind); }
   });
   if (changed) persistLocal();
-  if (S.set.salawat.on && now - LAST.salawat >= S.set.salawat.min * 60000) { LAST.salawat = now; toast('صلِّ على النبي ﷺ', pickRand(SAL)); }
-  if (S.set.dhikr.on && now - LAST.dhikr >= S.set.dhikr.min * 60000) { LAST.dhikr = now; toast('اذكر الله', pickRand(DHK.concat(RC.quotes))); }
+  if (S.set.salawat.on && now - TLAST > 60000 && now - LAST.salawat >= S.set.salawat.min * 60000) { LAST.salawat = now; toast('صلِّ على النبي ﷺ', pickRand(SAL)); }
+  if (S.set.dhikr.on && now - TLAST > 60000 && now - LAST.dhikr >= S.set.dhikr.min * 60000) { LAST.dhikr = now; toast('اذكر الله', pickRand(DHK.concat(RC.quotes))); }
   var cd = $('#cd'); if (cd) { var nx = nextPrayer(tt); cd.textContent = RL.fmtDur(nx.at - now); if (cd.getAttribute('data-k') !== nx.k + (nx.tomorrow ? 't' : '')) render(true); }
 }
 setInterval(tick, 1000);
@@ -1537,7 +1852,7 @@ function hadithCard(x) {
   var refs = [];
   if (x.b) refs.push('البخاري، حديث رقم ' + ar(x.b));
   if (x.m) refs.push('مسلم، حديث رقم ' + ar(x.m));
-  return '<article class="card stack"><div class="meta">عن <b>' + esc(x.n) + '</b> رضي الله عن' + (x.f ? 'ها' : 'ه') + '</div><p class="dua" lang="ar">قال رسول الله ﷺ: ' + esc(body) + '</p><div class="src">رواه ' + refs.join(' · ') + '</div></article>';
+  return '<article class="card stack"><div class="meta">عن <b>' + esc(x.n) + '</b> رضي الله عن' + (x.f ? 'ها' : 'ه') + '</div><p class="dua" lang="ar">قال رسول الله ﷺ: ' + esc(body) + '</p><div class="src">' + (refs.length ? 'رواه ' + refs.join(' · ') : esc(x.s || '')) + (x.w ? ' — ' + esc(x.w) : '') + '</div></article>';
 }
 function hadithList() {
   var q = H.q.trim(), list = RC.hadith.filter(function (x) { return (H.cat === 'الكل' || x.cat === H.cat) && (!q || (x.t || x.raw || '').indexOf(q) >= 0 || x.n.indexOf(q) >= 0); });
@@ -1580,13 +1895,13 @@ function viewHome() {
   if (fnote) h += '<a class="card fastcard" href="#fast"><div class="label">الصيام</div><b>' + fnote + '</b></a>';
   if (fri) h += '<div class="card" style="background:var(--accent-soft)"><b>يوم الجمعة</b><p class="meta" style="margin-top:4px">اغتسل وبكّر إلى المسجد، واقرأ سورة الكهف، وأكثر من الصلاة على النبي ﷺ، وتحرَّ ساعة الإجابة.</p></div>';
   h += '<div class="card next"><div class="label">الصلاة القادمة</div><div class="pname">' + (nx.k === 'dhuhr' && fri ? 'الجمعة' : PNAME[nx.k]) + '</div><div class="tnum">' + RL.fmtTime(nx.at, tz) + (nx.tomorrow ? ' غدًا' : '') + '</div><div class="cd" id="cd" data-k="' + nx.k + (nx.tomorrow ? 't' : '') + '">' + RL.fmtDur(nx.at - now) + '</div></div>';
-  h += '<div class="card times">' + PR.map(function (k) { return '<div class="trow' + (k === cur ? ' now' : '') + '"><span>' + (k === 'dhuhr' && fri ? 'الجمعة' : PNAME[k]) + '</span><span class="tm">' + RL.fmtTime(t[k], tz) + '</span></div>'; }).join('') + '</div>';
+  h += '<div class="card times">' + PR.map(function (k) { return '<div class="trow' + (k === cur ? ' now' : '') + '" data-k="' + k + '"><span>' + (k === 'dhuhr' && fri ? 'الجمعة' : PNAME[k]) + '</span><span class="tm">' + RL.fmtTime(t[k], tz) + '</span></div>'; }).join('') + '</div>';
   var city = (CITIES.filter(function (c) { return c[0] === S.set.city; })[0] || [0, 'موقع مخصص'])[1], q = qibla(+S.set.lat, +S.set.lng);
   h += '<p class="meta" style="text-align:center">' + esc(city) + ' · ' + esc(RL.METHODS[S.set.method].name) + ' · القبلة ' + ar(Math.round(q)) + '° من الشمال · <a href="#prefs" style="color:var(--accent)">تغيير</a></p>';
   var z = now < t.asr ? ['morning', 'أذكار الصباح'] : (now < t.isha + 45 * 60000 ? ['evening', 'أذكار المساء'] : ['sleep', 'أذكار النوم']);
   var zs = zSummary(z[0] === 'morning' ? 'm' : z[0] === 'evening' ? 'e' : 's', RC[z[0]]);
   var tl = tasksToday(), td = S.td[tt.key] || {}, tdn = tl.filter(function (x) { return td[x.id]; }).length;
-  h += '<div class="grid2">' + tile('zk-' + z[0], 'sun', z[1], ar(zs.d) + ' من ' + ar(zs.n)) + tile('tasks', 'list', 'أعمالي', tl.length ? ar(tdn) + ' من ' + ar(tl.length) : 'أضف أول عمل') + tile('letter', 'mail', 'رسالة', 'إلى نفسي أو لغيري') + tile('tasbih', 'count', 'المسبحة', 'تسبيح واستغفار') + '</div>';
+  h += '<div class="hsec"><span>الأقسام</span></div><div class="grid2">' + tile('zk-' + z[0], 'sun', z[1], ar(zs.d) + ' من ' + ar(zs.n)) + tile('tasks', 'list', 'أعمالي', tl.length ? ar(tdn) + ' من ' + ar(tl.length) : 'أضف أول عمل') + tile('letter', 'mail', 'رسالة', 'إلى نفسي أو لغيري') + tile('tasbih', 'count', 'المسبحة', 'تسبيح واستغفار') + '</div>';
   var all = []; Object.keys(RC.waaz).forEach(function (k) { RC.waaz[k].forEach(function (x) { all.push(x); }); });
   var w = all[dayIndex() % all.length];
   h += '<article class="card stack"><div class="label">موعظة اليوم</div><h3 class="heading">' + esc(w.h) + '</h3><p class="dua sm" lang="ar">' + esc(w.t) + '</p></article>';
@@ -1628,8 +1943,9 @@ function viewMore() {
 /* ---------- التذكيرات والإعدادات ---------- */
 function sw(label, path, val) { return '<label class="switch"><span>' + label + '</span><input type="checkbox" data-path="' + path + '"' + (val ? ' checked' : '') + '></label>'; }
 function num(label, path, val, min, max) { return '<label class="fld">' + label + '<input type="number" inputmode="numeric" data-path="' + path + '" data-num="1" step="any" min="' + min + '" max="' + max + '" value="' + val + '"></label>'; }
+function notifState() { if (!('Notification' in window)) return 'هذا المتصفح لا يدعم إشعارات الهاتف.'; var p = Notification.permission; return p === 'granted' ? 'الحالة: مفعّلة، وستصلك التذكيرات في شريط إشعارات الهاتف.' : p === 'denied' ? 'الحالة: محظورة. فعّلها من إعدادات الموقع في المتصفح (القفل بجانب العنوان ثم الأذونات).' : 'الحالة: غير مفعّلة. اضغط «تفعيل» ثم اختر «السماح».'; }
 function viewRemind() {
-  var s = S.set, h = '<div class="stack"><p class="note">التنبيهات تعمل ما دام التطبيق مفتوحًا. إذا أُغلق لا يصدر منه صوت.</p>';
+  var s = S.set, h = '<div class="stack"><p class="note">تصل التذكيرات إلى شريط إشعارات هاتفك ما دام التطبيق مفتوحًا أو في الخلفية. وإذا أغلقه النظام تمامًا فقد تتأخر أو لا تصل، وهذا قيد في تطبيقات الويب.</p>';
   h += '<div class="card"><b>تنبيه الصلوات</b>' + PR.map(function (k) { return sw(PNAME[k], 'alerts.' + k, s.alerts[k]); }).join('') + '</div>';
   h += '<div class="card stack">' + sw('تذكير قبل الفجر', 'fajrEarly.on', s.fajrEarly.on) + num('قبل الفجر بكم دقيقة', 'fajrEarly.min', s.fajrEarly.min, 5, 180) + '</div>';
   h += '<div class="card stack">' + sw('تذكير الجمعة (الغسل والكهف والصلاة على النبي)', 'jumuah.on', s.jumuah.on) + num('قبل صلاة الجمعة بكم دقيقة', 'jumuah.min', s.jumuah.min, 10, 300) + '</div>';
@@ -1637,7 +1953,7 @@ function viewRemind() {
   h += '<div class="card stack">' + sw('تذكير بذكر الله', 'dhikr.on', s.dhikr.on) + num('كل كم دقيقة', 'dhikr.min', s.dhikr.min, 5, 720) + '</div>';
   h += '<div class="card">' + sw('تذكير بأذكار الصباح', 'mAdhkar', s.mAdhkar) + sw('تذكير بأذكار المساء', 'eAdhkar', s.eAdhkar) + sw('صوت التنبيه', 'sound', s.sound) + '</div>';
   h += '<div class="card stack"><b>صوت الأذان</b><p class="meta">الصوت الافتراضي نغمة هادئة. يمكنك رفع ملف أذان من جهازك فيُحفظ على هذا المتصفح.</p><div class="row"><button class="btn" data-act="testalert">جرّب الصوت</button><label class="btn ghost" for="adhanfile">رفع ملف الأذان</label><input type="file" id="adhanfile" accept="audio/*" hidden></div></div>';
-  h += '<button class="btn ghost" data-act="notif">السماح بإشعارات المتصفح</button></div>';
+  h = h.replace('</p>', '</p><div class="card stack"><b>إشعارات الهاتف</b><p class="meta">' + notifState() + '</p><div class="row"><button class="btn" data-act="notif">تفعيل إشعارات الهاتف</button><button class="btn ghost" data-act="testnotif">جرّب إشعارًا</button></div></div>') + '</div>';
   return { title: 'التذكيرات', back: 'more', html: h };
 }
 function viewPrefs() {
@@ -1755,7 +2071,8 @@ document.addEventListener('click', function (e) {
   if (a === 'hcat') { H.cat = d.v; render(true); return; }
   if (a === 'dtab') { D.tab = d.v; render(true); return; }
   if (a === 'testalert') { toast('حان الآن موعد الصلاة', 'هكذا يبدو التنبيه.', 'adhan'); return; }
-  if (a === 'notif') { try { Notification.requestPermission().then(function (p) { toast(p === 'granted' ? 'تم السماح بالإشعارات' : 'لم يُسمح بالإشعارات', p === 'granted' ? '' : 'ستظهر التنبيهات داخل التطبيق فقط.'); }); } catch (err) { toast('الإشعارات غير متاحة هنا', 'ستظهر التنبيهات داخل التطبيق.'); } return; }
+  if (a === 'testnotif') { sysNotify('إشعار تجريبي', 'هكذا ستصلك التذكيرات على هاتفك.', 'n'); toast('إشعار تجريبي', 'هكذا يظهر التنبيه داخل التطبيق.'); return; }
+  if (a === 'notif') { try { Notification.requestPermission().then(function (p) { toast(p === 'granted' ? 'تم تفعيل الإشعارات' : 'لم يُسمح بالإشعارات', p === 'granted' ? 'ستصلك التذكيرات على هاتفك.' : 'ستظهر التنبيهات داخل التطبيق فقط.'); if (p === 'granted') sysNotify('تم تفعيل الإشعارات', 'ستصلك التذكيرات على هاتفك.', 'n'); try { render(true); } catch (e) {} }); } catch (err) { toast('الإشعارات غير متاحة هنا', 'ستظهر التنبيهات داخل التطبيق.'); } return; }
 });
 var SW = null;
 document.addEventListener('touchstart', function (e) { var t = e.touches[0]; SW = e.target.closest && e.target.closest('.zr') ? { x: t.clientX, y: t.clientY } : null; }, { passive: true });

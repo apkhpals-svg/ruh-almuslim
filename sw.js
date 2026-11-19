@@ -1,11 +1,11 @@
 /* روح المسلم - Service Worker
    غيّر VERSION مع كل تعديل (شغّل: python3 bump_version.py) فيتحدّث التطبيق المثبّت تلقائيًا. */
-const VERSION = 'v-07ea2616';
+const VERSION = 'v-a92f3b1c';
 const SHELL = 'ruh-shell-' + VERSION;   // يتغيّر مع كل إصدار ويُحذف القديم
 const GF = 'ruh-gfonts-v1';             // خطوط Google (ثابت)
 const QC = 'ruh-quran-v1';              // صفحات وخطوط المصحف (ثابت، حجمه كبير فلا يُعاد تحميله مع كل تحديث)
 const FILES = ['./', './index.html', './manifest.json', '././icon-192.png', '././icon-512.png', '././icon-maskable-512.png', '././apple-touch-icon.png', '././favicon-32.png'];
-const GCSS = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap';
+const GCSS = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap';
 const QRE = /^https:\/\/(?:cdn\.jsdelivr\.net\/gh\/MohamadHajjRabee\/quran-qcf4@main|raw\.githubusercontent\.com\/MohamadHajjRabee\/quran-qcf4\/main)(\/.+)$/;
 const qKey = p => new Request(self.location.origin + '/__q' + p);
 
@@ -63,3 +63,17 @@ async function nav(r) {                                 // الصفحة: الش�
     return x;
   } catch (_) { return (await c.match('./index.html')) || Response.error(); }
 }
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const cs = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of cs) if ('focus' in c) return c.focus();
+    return clients.openWindow('./');
+  })());
+});
+self.addEventListener('push', e => {                    // جاهز لإشعارات الخادم لاحقًا (تصل والتطبيق مغلق)
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'روح المسلم', { body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png', dir: 'rtl', lang: 'ar', tag: d.tag || 'ruh', data: { url: './' } }));
+});
