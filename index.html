@@ -436,9 +436,11 @@ nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent
 .mqjmp input { flex: 1; min-width: 0; height: 40px; border: 1px solid #8CCBE6; border-radius: 10px; padding: 0 12px; font-size: 16px; background: #fff; color: #0B1C2C; }
 .mqscreen #mqbar { position: absolute; z-index: 5; inset-inline: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); background: #F7FCFE; color: #0B1C2C; border: 1px solid #8CCBE6; box-shadow: 0 10px 30px rgba(0,0,0,.28); }
 .mqscreen #mqbar[hidden] { display: none; }
-.mqscreen { background: #F4F2EA; }
-.mqscreen #mqwrap { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 0 6px 6px; display: flex; }
-#mqimg { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 4px; background: transparent; transition: opacity .15s ease; user-select: none; -webkit-user-drag: none; }
+/* شريط التحكم العلوي فقط فيروزي، والصفحة على خلفية بيضاء */
+.mqscreen { background: #FFFFFF; }
+.mqscreen .mqtools { background: #1B85B8; color: #fff; height: 52px; padding: 0 10px; box-shadow: 0 2px 6px rgba(0,0,0,.2); position: relative; z-index: 7; }
+.mqscreen #mqwrap { position: relative; flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0; display: flex; background: #FFFFFF; }
+#mqimg { display: block; width: 100%; height: auto; margin: auto 0; flex: none; border-radius: 0; background: #FFFFFF; transition: opacity .15s ease; user-select: none; -webkit-user-drag: none; }
 #mqimg:not([src]) { visibility: hidden; }
 #mqimg.ld { opacity: .35; }
 #mqwrap.zoom { overflow: auto; display: block; -webkit-overflow-scrolling: touch; }
@@ -469,6 +471,8 @@ nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent
 .mqf .mw.mk { box-shadow: inset 0 -3px 0 #E0B35A; }
 .mqf .mqload { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 12px; color: #355; }
 .mqf .mqload .meta, .mqf .qmiss { color: #46606f; }
+.qpage.mtx { text-align: justify; text-align-last: center; direction: rtl; line-height: 2.35; margin: 6px 0; }
+.qpage.mtx .nb { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -1556,7 +1560,7 @@ function paginate(s) {
   return (PGC[key] = { pages: pages, lh: lh, units: units });
 }
 function pageOfAyah(pages, a) { for (var i = 0; i < pages.length; i++) if (pages[i].a1 >= a) return i; return pages.length - 1; }
-function inText() { var r = route(); return r.name === 'quran' && /^t\d/.test(r.arg); }
+function inText() { var r = route(); return r.name === 'quran' && /^[tm]\d/.test(r.arg); }
 function repaginate() { PGC = {}; if (inText()) { Q.anchor = Q.a0; render(true); } }
 if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { clearTimeout(repaginate.t); repaginate.t = setTimeout(repaginate, 150); });
 window.addEventListener('resize', function () { clearTimeout(repaginate.r); repaginate.r = setTimeout(function () { var m = $('#main'); if (m && inText()) { PGC = {}; Q.anchor = Q.a0; render(true); } }, 250); });
@@ -1578,6 +1582,7 @@ function viewQuranHome() {
   if (!quranOk()) h += '<div class="qmiss">نص المصحف غير مكتمل في هذه النسخة.</div>';
   if (S.qmark) h += '<a class="btn primary" href="#quran-' + (S.qmark.p ? 'p' + S.qmark.p : S.qmark.s) + '" data-act="qresume">تابع القراءة: ' + (S.qmark.pg ? 'صفحة ' + ar(S.qmark.p) + ' (سورة ' + RS.names[S.qmark.s - 1] + ')' : 'سورة ' + RS.names[S.qmark.s - 1] + '، الآية ' + ar(S.qmark.a)) + '</a>';
   h += '<div class="row"><input type="number" id="qjump" min="1" max="604" inputmode="numeric" placeholder="اذهب إلى صفحة (١–٦٠٤)" aria-label="رقم الصفحة" style="flex:1;min-width:0"><button class="btn" data-act="qjump">اذهب</button></div>';
+  h += '<a class="btn" href="#quran-m' + (S.qmark ? qmPageOf(S.qmark.s, S.qmark.a) : 1) + '">قراءة النص العثماني بصفحات المصحف (٦٠٤)</a>';
   h += '<div class="seg" role="group" aria-label="طريقة التصفح"><button data-act="qtab" data-v="surah" aria-pressed="' + (Q.tab === 'surah') + '">السور</button><button data-act="qtab" data-v="juz" aria-pressed="' + (Q.tab === 'juz') + '">الأجزاء</button></div>';
   if (Q.tab === 'surah') h += '<input type="search" id="qsearch" placeholder="ابحث باسم السورة أو رقمها" value="' + esc(Q.q) + '" aria-label="بحث عن سورة"><div class="stack" id="slist" style="gap:8px">' + surahListHtml() + '</div>';
   else h += '<div class="stack" style="gap:8px">' + JUZ.map(function (j, i) {
@@ -1722,10 +1727,14 @@ function qShow(n) {
   }, function () { var w = $('#mqwrap'); if (Q.pg === n && w) w.innerHTML = qErrHtml(n); });
 }
 function qTitle(n, d) { var t = $('#top h1'), f = d && d.surahs && d.surahs[0]; if (t && f) t.textContent = 'سورة ' + RS.names[f.id - 1]; }
-/* ---------- المصحف كصور جاهزة (٦٠٤ صفحة): مستودع GovarJabbar/Quran-PNG، الملفات 1.png … 604.png في الجذر ---------- */
-var QIMG = { raw: 'https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/main/', cdn: 'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@main/' };
-var QIMG_OLD = { raw: 'https://raw.githubusercontent.com/Miftah-Fentaw/Quran-Images/main/png/', cdn: 'https://cdn.jsdelivr.net/gh/Miftah-Fentaw/Quran-Images@main/png/' };
-function qImgSrc(n, alt) { return [QIMG.raw, QIMG.cdn, QIMG_OLD.raw, QIMG_OLD.cdn][alt | 0] + n + '.png'; }   // 0 المصدر الجديد، 1 CDN له، 2-3 المصدر القديم احتياطًا
+/* ---------- المصحف كصور جاهزة (٦٠٤ صفحة): مستودع QuranIslam/Ayat-PHP، المجلد safahat/png_big، الملفات 1.png … 604.png ---------- */
+var QIMG = { raw: 'https://raw.githubusercontent.com/apkhpals-svg/ruh-almuslim/main/', cdn: 'https://cdn.jsdelivr.net/gh/apkhpals-svg/ruh-almuslim@main/' };   // صور مصحف المدينة الكبير الأزرق: الغلاف = ملف 1، وصفحة 1 = ملف 5 (رقم الملف = الصفحة + 4)
+function qImgSrcs(n) {   // الترتيب: مسار الصفحة النسبي (NFC ثم NFD)، raw.githubusercontent (NFC ثم NFD)، jsDelivr (NFC ثم NFD). رقم الملف = الصفحة + 4
+  var nm = 'مصحف المدينة الكبير الأزرق_' + (n + 4) + '.jpg', out = [];
+  ['./', QIMG.raw, QIMG.cdn].forEach(function (b) { ['NFC', 'NFD'].forEach(function (f) { out.push(b + encodeURIComponent(nm.normalize(f))); }); });
+  return out;
+}
+function qImgSrc(n, alt) { return qImgSrcs(n)[alt | 0]; }
 function qImgPre(n) { [n + 1, n - 1, n + 2].forEach(function (k) { if (k >= 1 && k <= 604) { var im = new Image(); im.crossOrigin = 'anonymous'; im.src = qImgSrc(k); } }); }
 function qImgShow(n) {   // يحمّل صورة الصفحة ثم يستبدلها في مكانها (يجرّب الرابط المباشر ثم نسخة CDN احتياطية)
   var img = $('#mqimg'), err = $('#mqerr'); if (!img) return;
@@ -1734,7 +1743,7 @@ function qImgShow(n) {   // يحمّل صورة الصفحة ثم يستبدله
   (function load(alt) {
     var t = new Image(); t.crossOrigin = 'anonymous';
     t.onload = function () { if (tok !== qImgShow.t) return; img.src = t.src; img.alt = 'صفحة ' + n + ' من مصحف المدينة'; img.classList.remove('ld'); qImgPre(n); };
-    t.onerror = function () { if (tok !== qImgShow.t) return; if (!alt || alt < 3) load((alt | 0) + 1); else { img.classList.remove('ld'); if (err) err.hidden = false; } };
+    t.onerror = function () { if (tok !== qImgShow.t) return; if ((alt | 0) < 5) load((alt | 0) + 1); else { img.classList.remove('ld'); if (err) { var lk = err.querySelector('.qerru'); if (!lk) { lk = document.createElement('a'); lk.className = 'qerru'; lk.target = '_blank'; lk.rel = 'noopener'; lk.style.cssText = 'display:block;margin-top:10px;font-size:13px;text-decoration:underline'; lk.textContent = 'افتح رابط الصورة للتحقق منه'; err.appendChild(lk); } lk.href = qImgSrc(n, 2); err.hidden = false; } } };
     t.src = qImgSrc(n, alt);
   })(0);
 }
@@ -1743,7 +1752,7 @@ function qImgGo(n) {   // تغيير رقم الصفحة مباشرة (بلا إ
   var c = $('#mqcount'), pv = $('#mqprev'), nx = $('#mqnext'), tx = $('#mqtext'), w = $('#mqwrap'), bm = $('#mqbm');
   if (c) c.textContent = ar(n) + ' / ' + ar(604);
   if (pv) pv.disabled = n <= 1; if (nx) nx.disabled = n >= 604;
-  if (tx) tx.setAttribute('href', '#quran-t' + qSurahOfPage(n));
+  if (tx) tx.setAttribute('href', '#quran-m' + n);
   if (bm) bm.setAttribute('aria-pressed', String(!!(S.qmark && S.qmark.pg && S.qmark.p === n)));
   if (w) { w.scrollTop = 0; w.scrollLeft = 0; }
   var tt = $('#top h1'); if (tt) tt.textContent = 'سورة ' + RS.names[qSurahOfPage(n) - 1];
@@ -1761,15 +1770,65 @@ function viewQuranPage(n) {
     '<span class="grow"></span>' +
     '<button class="mqb" data-act="qzoom" id="mqzoom" aria-pressed="false" aria-label="تكبير"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5M11 8v6M8 11h6"/></svg></button>' +
     '<button class="mqb" data-act="qbm" id="mqbm" aria-pressed="' + bm + '" aria-label="علّم هذه الصفحة للمتابعة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v16l-5-3.5L7 20z"/></svg></button>' +
-    '<a class="mqb" id="mqtext" href="#quran-t' + qSurahOfPage(n) + '">نص</a></div>' +
+    '<a class="mqb" id="mqtext" href="#quran-m' + n + '">نص</a></div>' +
     '<div id="mqwrap"><img id="mqimg" class="ld" alt="صفحة ' + n + ' من مصحف المدينة" decoding="async" draggable="false"><div class="qmiss mqerr" id="mqerr" hidden>تعذّر تحميل صورة الصفحة. تحتاج الصور إلى اتصال بالإنترنت.<div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="qretry">إعادة المحاولة</button><a class="btn sm ghost" id="mqerrtext" href="#quran-t' + qSurahOfPage(n) + '">عرض النص</a></div></div></div>' +
     '<div class="mqjmp" id="mqjmp" hidden><input type="number" id="qjump" min="1" max="604" inputmode="numeric" placeholder="رقم الصفحة" aria-label="رقم الصفحة"><button class="btn primary" data-act="qjump">اذهب</button></div></div>';
   return { title: 'سورة ' + RS.names[qSurahOfPage(n) - 1], back: 'quran', html: h, after: function () { qImgShow(n); } };
+}
+
+/* ---------- نص المصحف العثماني مقسّمًا على ٦٠٤ صفحة (حدود الصفحات من واجهة alquran.cloud مرة واحدة ثم تُحفظ محليًا) ---------- */
+var QMAP = null, QMAP_KEY = 'ruh-qmap-v1', QM = { n: 1, err: false, busy: false };
+function qmValid(r) { if (!r || r.length !== 604 || r[0][0] !== 1 || r[0][1] !== 1) return false; for (var i = 1; i < 604; i++) if (r[i][0] < r[i - 1][0] || (r[i][0] === r[i - 1][0] && r[i][1] <= r[i - 1][1])) return false; return true; }
+function qmCached() { if (QMAP) return QMAP; try { var r = JSON.parse(localStorage.getItem(QMAP_KEY)); if (qmValid(r)) return (QMAP = r); } catch (e) {} return null; }
+function qmFetch() {
+  return fetch('https://api.alquran.cloud/v1/meta').then(function (r) { return r.json(); }).then(function (j) {
+    var refs = j.data.pages.references.map(function (x) { return [x.surah, x.ayah]; });
+    if (!qmValid(refs)) throw new Error('bad');
+    QMAP = refs; try { localStorage.setItem(QMAP_KEY, JSON.stringify(refs)); } catch (e) {}
+    return refs;
+  });
+}
+function qmSegs(n) {
+  var st = QMAP[n - 1], en = n < 604 ? QMAP[n] : [115, 1], s = st[0], a = st[1], out = [];
+  while (s < en[0] || (s === en[0] && a < en[1])) {
+    var last = s === en[0] ? en[1] - 1 : RS.counts[s - 1];
+    out.push({ s: s, a0: a, a1: last }); s++; a = 1;
+  }
+  return out;
+}
+function qmPageOf(s, a) { if (!qmCached()) return SURAH_PAGE[s]; var p = 1; for (var i = 0; i < 604; i++) if (QMAP[i][0] < s || (QMAP[i][0] === s && QMAP[i][1] <= a)) p = i + 1; return p; }
+function viewQuranMPage(n) {
+  if (!quranOk()) return viewQuranHome();
+  QM.n = n;
+  if (!qmCached()) {
+    var msg = QM.err ? '<div class="qmiss">تعذّر جلب حدود صفحات المصحف. تحتاج أول مرة إلى اتصال بالإنترنت.<div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="qmretry">إعادة المحاولة</button><a class="btn sm ghost" href="#quran-t' + qSurahOfPage(n) + '">عرض السورة كاملة</a></div></div>' : '<div class="empty">جارٍ تجهيز صفحات المصحف…</div>';
+    return { title: 'القرآن الكريم', back: 'quran', html: '<div class="stack">' + msg + '</div>', after: function () {
+      if (QM.err || QM.busy) return; QM.busy = true;
+      qmFetch().then(function () { QM.busy = false; QM.err = false; if (route().name === 'quran') render(true); }, function () { QM.busy = false; QM.err = true; if (route().name === 'quran') render(true); });
+    } };
+  }
+  var segs = qmSegs(n), s0 = segs[0].s, ruq = S.set.qfont === 'ruqaa', mk = S.qmark || {};
+  var h = '<div class="stack"><div class="qtool"><div class="seg" role="group" aria-label="نوع الخط"><button data-act="qfont" data-v="madina" aria-pressed="' + (!ruq) + '">مصحف المدينة</button><button data-act="qfont" data-v="ruqaa" aria-pressed="' + ruq + '">الرقعة</button></div>' +
+    '<div class="row sb"><span class="meta">حجم الخط</span><div class="row"><button class="btn sm" data-act="qsize" data-d="-2" aria-label="تصغير الخط">أ−</button><b class="tnum meta">' + ar(S.set.qsize) + '</b><button class="btn sm" data-act="qsize" data-d="2" aria-label="تكبير الخط">أ+</button></div></div></div>';
+  var body = '<div class="run"><span>الجزء ' + ar(juzOf(s0, segs[0].a0)) + '</span><span>سورة ' + RS.names[s0 - 1] + '</span></div>';
+  segs.forEach(function (g) {
+    if (g.a0 === 1) body += '<div class="banner"><div class="bn"><div class="bt">سورة ' + RS.names[g.s - 1] + '</div><div class="bs">' + ar(RS.counts[g.s - 1]) + ' آية</div></div></div>' + (basOf(g.s) ? '<div class="basmala" lang="ar">' + esc(basOf(g.s)) + '</div>' : '');
+    var t = '';
+    for (var a = g.a0; a <= g.a1; a++) t += ayahInline(ayahText(g.s, a), markerHtml(a, g.s, mk.s === g.s && mk.a === a, true)) + ' ';
+    body += '<div class="qpage mtx" lang="ar">' + t + '</div>';
+  });
+  h += '<article class="mpage ' + (n % 2 ? 'odd' : 'even') + (ruq ? ' ruq' : '') + '"><div class="pin"><div class="qwrap">' + body + '</div><span class="pnum tnum">' + ar(n) + '</span></div></article>';
+  h += '<div class="row sb"><button class="btn" data-act="qmp" data-d="-1"' + (n <= 1 ? ' disabled' : '') + '>' + svg('back', 'ck') + 'السابقة</button><span class="meta tnum">صفحة ' + ar(n) + ' / ' + ar(604) + '</span><button class="btn" data-act="qmp" data-d="1"' + (n >= 604 ? ' disabled' : '') + '>التالية<span class="flip">' + svg('back', 'ck') + '</span></button></div>';
+  h += '<div class="row"><input type="number" id="qmjump" min="1" max="604" inputmode="numeric" placeholder="اذهب إلى صفحة (١–٦٠٤)" aria-label="رقم الصفحة" style="flex:1;min-width:0"><button class="btn" data-act="qmjump">اذهب</button></div>';
+  h += '<div class="row" style="justify-content:center"><a class="btn" href="#quran-p' + n + '">عرض صورة الصفحة</a></div>';
+  h += '<p class="meta" style="text-align:center">النص العثماني بالتشكيل الكامل، مقسّم على صفحات مصحف المدينة (٦٠٤). اضغط رقم الآية لوضع علامة.</p></div>';
+  return { title: 'سورة ' + RS.names[s0 - 1], back: 'quran', html: h };
 }
 function viewQuran(arg) {
   if (!arg) return viewQuranHome();
   var c = arg.charAt(0);
   if (c === 't') return viewQuranText(arg.slice(1));
+  if (c === 'm') { var mn = parseInt(arg.slice(1), 10); return viewQuranMPage(mn >= 1 && mn <= 604 ? mn : 1); }
   if (c === 'p') { var n = parseInt(arg.slice(1), 10); return n >= 1 && n <= 604 ? viewQuranPage(n) : viewQuranHome(); }
   var s = +arg; if (!(s >= 1 && s <= 114)) return viewQuranHome();
   var g = Q.goto; Q.goto = 0;
@@ -1782,7 +1841,7 @@ document.addEventListener('click', function (e) {
   var w = e.target.closest ? e.target.closest('#mq .mw[data-v]') : null; if (!w) return;
   var v = w.getAttribute('data-v'); Q.sel = Q.sel === v ? '' : v; qSelApply();
 });
-document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && e.target.id === 'qjump') { var b = document.querySelector('[data-act="qjump"]'); if (b) b.click(); } });
+document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && (e.target.id === 'qjump' || e.target.id === 'qmjump')) { var b = document.querySelector('[data-act="' + e.target.id + '"]'); if (b) b.click(); } });
 var qTouch = null, qW = null;
 document.addEventListener('touchstart', function (e) { qW = e.target.closest && e.target.closest('#mqwrap'); if (qW && qW.classList.contains('zoom')) qW = null; qTouch = qW && e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY, h: false } : null; }, { passive: true });
 document.addEventListener('touchmove', function (e) {
@@ -2233,6 +2292,9 @@ document.addEventListener('click', function (e) {
   if (a === 'qbm') { var cur = S.qmark && S.qmark.pg && S.qmark.p === Q.pg; S.qmark = cur ? null : { s: qSurahOfPage(Q.pg), a: 1, p: Q.pg, pg: 1 }; save(); var bb = $('#mqbm'); if (bb) bb.setAttribute('aria-pressed', String(!cur)); toast(cur ? 'أُزيلت العلامة' : 'عُلّمت الصفحة ' + ar(Q.pg)); return; }
   if (a === 'qjt') { var jp = $('#mqjmp'); if (jp) { jp.hidden = !jp.hidden; var ji = $('#qjump'); if (!jp.hidden && ji) ji.focus(); } return; }
   if (a === 'qjump') { var jv = parseInt(($('#qjump') || {}).value, 10); if (jv >= 1 && jv <= 604) { if ($('#mqimg')) { qImgGo(jv); var jp2 = $('#mqjmp'); if (jp2) jp2.hidden = true; } else go('quran-p' + jv); } else toast('اكتب رقمًا من ١ إلى ٦٠٤'); return; }
+  if (a === 'qmp') { var mp = (QM.n || 1) + (+d.d); if (mp >= 1 && mp <= 604) go('quran-m' + mp); return; }
+  if (a === 'qmjump') { var mv = parseInt(($('#qmjump') || {}).value, 10); if (mv >= 1 && mv <= 604) go('quran-m' + mv); else toast('اكتب رقمًا من ١ إلى ٦٠٤'); return; }
+  if (a === 'qmretry') { QM.err = false; render(true); return; }
   if (a === 'qretry') { qImgShow(Q.pg); return; }
   if (a === 'qmark') { S.qmark = (S.qmark && S.qmark.s === +d.s && S.qmark.a === +d.a) ? null : (d.p ? { s: +d.s, a: +d.a, p: +d.p } : { s: +d.s, a: +d.a }); save(); render(true); return; }
   if (a === 'fastlog') { var fk = today(); if (S.fasts[fk]) delete S.fasts[fk]; else S.fasts[fk] = 1; save(); render(true); return; }
