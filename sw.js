@@ -1,12 +1,16 @@
 /* روح المسلم - Service Worker
    غيّر VERSION مع كل تعديل (شغّل: python3 bump_version.py) فيتحدّث التطبيق المثبّت تلقائيًا. */
-const VERSION = 'v-a92f3b1c';
+const VERSION = 'v-3f6b91d2';
 const SHELL = 'ruh-shell-' + VERSION;   // يتغيّر مع كل إصدار ويُحذف القديم
 const GF = 'ruh-gfonts-v1';             // خطوط Google (ثابت)
 const QC = 'ruh-quran-v1';              // صفحات وخطوط المصحف (ثابت، حجمه كبير فلا يُعاد تحميله مع كل تحديث)
 const FILES = ['./', './index.html', './manifest.json', '././icon-192.png', '././icon-512.png', '././icon-maskable-512.png', '././apple-touch-icon.png', '././favicon-32.png'];
 const GCSS = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap';
 const QRE = /^https:\/\/(?:cdn\.jsdelivr\.net\/gh\/MohamadHajjRabee\/quran-qcf4@main|raw\.githubusercontent\.com\/MohamadHajjRabee\/quran-qcf4\/main)(\/.+)$/;
+const QJ = /^https:\/\/(?:raw\.githubusercontent\.com\/apkhpals-svg\/ruh-almuslim\/main|cdn\.jsdelivr\.net\/gh\/apkhpals-svg\/ruh-almuslim@main)\/.+$/;
+const jKey = u => { try { const m = /_(\d+)\.jpg$/.exec(decodeURIComponent(new URL(u).pathname)); return m ? m[1] + '.jpg' : null; } catch (_) { return null; } };  // مفتاح موحّد لكل صور المصحف مهما كان المصدر أو ترميز الاسم
+const QI = /^https:\/\/(?:raw\.githubusercontent\.com\/GovarJabbar\/Quran-PNG\/main|cdn\.jsdelivr\.net\/gh\/GovarJabbar\/Quran-PNG@main|raw\.githubusercontent\.com\/Miftah-Fentaw\/Quran-Images\/main\/png|cdn\.jsdelivr\.net\/gh\/Miftah-Fentaw\/Quran-Images@main\/png)\/(\d+\.png)$/;
+const IC = 'ruh-qimg-v2';              // صور صفحات المصحف (ثابت: تُحفظ كل صفحة تُفتح لتعمل دون إنترنت لاحقًا)
 const qKey = p => new Request(self.location.origin + '/__q' + p);
 
 self.addEventListener('install', e => {
@@ -27,6 +31,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => e.waitUntil((async () => {
   for (const k of await caches.keys()) if (k.startsWith('ruh-shell-') && k !== SHELL) await caches.delete(k);
+  await caches.delete('ruh-qimg-v1');                   // صور المصدر القديم
   await self.clients.claim();                           // السيطرة على الصفحات المفتوحة فورًا
 })()));
 
@@ -39,6 +44,9 @@ self.addEventListener('fetch', e => {
   const r = e.request; if (r.method !== 'GET') return;
   const u = new URL(r.url), m = QRE.exec(r.url);
   if (m) return e.respondWith(quran(r, m[1]));
+  if (QJ.test(r.url) || (u.origin === self.location.origin && /\.jpg$/i.test(u.pathname))) { const jk = jKey(r.url); if (jk) return e.respondWith(qimg(r, jk)); }
+  const mi = QI.exec(r.url);
+  if (mi) return e.respondWith(qimg(r, mi[1]));
   if (u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com') return e.respondWith(swr(r, GF));
   if (u.origin === self.location.origin) e.respondWith(r.mode === 'navigate' ? nav(r) : swr(r, SHELL));
 });
@@ -48,6 +56,13 @@ async function quran(r, p) {                            // الكاش أولًا
   if (h) return h;
   const res = await fetch(r);
   if (res.ok) c.put(k, res.clone());
+  return res;
+}
+async function qimg(r, f) {                             // صورة الصفحة: الكاش أولًا، ثم الشبكة وتُحفظ (CORS فقط حتى لا يتضخم الكاش)
+  const c = await caches.open(IC), k = new Request(self.location.origin + '/__qi/' + f), h = await c.match(k);
+  if (h) return h;
+  const res = await fetch(r);
+  if (res.ok && res.type !== 'opaque') c.put(k, res.clone());
   return res;
 }
 async function swr(r, name) {                           // من الكاش فورًا ثم تحديثه من الشبكة
