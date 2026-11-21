@@ -1,6 +1,6 @@
 /* روح المسلم - Service Worker
    غيّر VERSION مع كل تعديل (شغّل: python3 bump_version.py) فيتحدّث التطبيق المثبّت تلقائيًا. */
-const VERSION = 'v-3f6b91d2';
+const VERSION = 'v-8a21c6f0';
 const SHELL = 'ruh-shell-' + VERSION;   // يتغيّر مع كل إصدار ويُحذف القديم
 const GF = 'ruh-gfonts-v1';             // خطوط Google (ثابت)
 const QC = 'ruh-quran-v1';              // صفحات وخطوط المصحف (ثابت، حجمه كبير فلا يُعاد تحميله مع كل تحديث)
@@ -87,8 +87,50 @@ self.addEventListener('notificationclick', e => {
     return clients.openWindow('./');
   })());
 });
-self.addEventListener('push', e => {                    // جاهز لإشعارات الخادم لاحقًا (تصل والتطبيق مغلق)
-  let d = {};
-  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'روح المسلم', { body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png', dir: 'rtl', lang: 'ar', tag: d.tag || 'ruh', data: { url: './' } }));
+/* ---------- إشعارات الخلفية ----------
+   الصفحة تُرسل جدولًا بأحداث الأيام القادمة {id, at, title, body, kind} فنخزّنه في IndexedDB،
+   ثم نعرض المستحق منها كلما أيقظنا النظام (periodicsync / sync) أو وصلنا push أو فُتح التطبيق. */
+const DB = 'ruh-sched', ST = 'kv';
+const idb = () => new Promise((res, rej) => { const r = indexedDB.open(DB, 1); r.onupgradeneeded = () => r.result.createObjectStore(ST); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const kvGet = async k => { try { const d = await idb(); return await new Promise(res => { const q = d.transaction(ST).objectStore(ST).get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(undefined); }); } catch (_) { return undefined; } };
+const kvSet = async (k, v) => { try { const d = await idb(); await new Promise(res => { const t = d.transaction(ST, 'readwrite'); t.objectStore(ST).put(v, k); t.oncomplete = () => res(); t.onerror = () => res(); }); } catch (_) {} };
+const FALLBACK = [['اذكر الله', 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ'], ['صلِّ على النبي ﷺ', 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ'], ['اذكر الله', 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ']];
+const nopts = (e, renotify) => ({ body: String(e.body || '').trim(), icon: 'icon-192.png', badge: 'icon-192.png', tag: e.id || 'ruh', renotify: renotify !== false, dir: 'rtl', lang: 'ar', vibrate: e.kind === 'adhan' ? [300, 150, 300] : [120], requireInteraction: e.kind === 'adhan', data: { url: './' } });
+async function show(e) { if (!e || !String(e.title || '').trim()) return false; await self.registration.showNotification(e.title, nopts(e)); return true; }
+
+async function checkDue() {                     // يعرض ما حان موعده (خلال ٤٥ دقيقة) ولم يُعرض بعد، ولا يُظهر أبدًا إشعارًا فارغًا
+  const ev = (await kvGet('events')) || [], shown = (await kvGet('shown')) || {}, now = Date.now();
+  const due = ev.filter(e => e.at <= now && now - e.at <= 45 * 60000 && !shown[e.id + '@' + e.at]);
+  let n = 0, lastRemind = null;
+  for (const e of due) {
+    shown[e.id + '@' + e.at] = now;
+    if (e.id === 'ruh-remind') { lastRemind = e; continue; }   // التذكيرات العامة: نعرض الأحدث فقط
+    if (await show(e)) n++;
+  }
+  if (lastRemind && await show(lastRemind)) n++;
+  for (const k of Object.keys(shown)) if (now - shown[k] > 3 * 86400000) delete shown[k];
+  if (due.length) await kvSet('shown', shown);
+  return n;
+}
+async function armTriggers(ev) {               // إن دعم المتصفح الإشعارات المجدولة (Notification Triggers) فهي الأدق
+  try {
+    if (!('showTrigger' in Notification.prototype) || typeof TimestampTrigger === 'undefined') return;
+    (await self.registration.getNotifications({ includeTriggered: false })).forEach(n => n.close());
+    for (const e of ev.filter(x => x.at > Date.now() + 5000).slice(0, 60)) await self.registration.showNotification(e.title, Object.assign(nopts(e, false), { showTrigger: new TimestampTrigger(e.at) }));
+  } catch (_) {}
+}
+self.addEventListener('message', e => {
+  const d = e.data;
+  if (d && d.type === 'sched' && Array.isArray(d.events)) e.waitUntil((async () => { await kvSet('events', d.events.filter(x => x && x.title && x.at)); await armTriggers(d.events); await checkDue(); })());
+  if (d && d.type === 'check') e.waitUntil(checkDue());
+});
+self.addEventListener('periodicsync', e => { if (e.tag === 'ruh-sched') e.waitUntil(checkDue()); });
+self.addEventListener('sync', e => { if (e.tag === 'ruh-sched') e.waitUntil(checkDue()); });
+self.addEventListener('push', e => {            // جاهز لإشعارات الخادم لاحقًا. وإن وصل بلا محتوى نعرض ما حان، أو ذكرًا بدل إشعار فارغ
+  e.waitUntil((async () => {
+    let d = {};
+    try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
+    if (d.title || d.body) { await show({ id: d.tag || 'ruh', title: d.title || 'روح المسلم', body: d.body || '', kind: d.kind }); return; }
+    if (!(await checkDue())) { const f = FALLBACK[Math.floor(Math.random() * FALLBACK.length)]; await show({ id: 'ruh-remind', title: f[0], body: f[1] }); }
+  })());
 });
