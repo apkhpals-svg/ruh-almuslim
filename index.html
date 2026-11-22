@@ -2,9 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>روح المسلم</title>
-  <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bb2f87cbfdf54b08969797bb863fed01"}'></script><!-- End Cloudflare Web Analytics -->
 <meta name="theme-color" content="#F2F6F4">
 <meta name="description" content="روح المسلم: مواقيت الصلاة والأذكار والمصحف والمسبحة">
 <link rel="manifest" href="manifest.json">
@@ -329,7 +328,7 @@ button.surah { font-family: inherit; }
 html{scroll-padding-top:env(safe-area-inset-top,0px);overscroll-behavior-y:contain;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 body{margin:0}
 img{max-width:100%}
-#mqwrap{touch-action:pan-y pinch-zoom;-webkit-touch-callout:none}
+#mqwrap{touch-action:pan-y;-webkit-touch-callout:none}
 @supports (min-height:100dvh){#app{min-height:100dvh}}
 @media (max-width:360px){body{font-size:16px}nav.tabs a{font-size:11.5px}}
 progress{accent-color:var(--primary)}
@@ -362,7 +361,6 @@ body{background:var(--glow),var(--pattern),var(--bg);font-family:var(--f-ui)}
 .trow:last-child{border:1px solid transparent}
 .trow.now{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);padding-inline:2px}
 .trow .tm{font-size:clamp(12px,3.6vw,14.5px);color:var(--fg);font-weight:700}
-.frow{padding:10px 0;border-bottom:1px solid var(--line)}.frow:last-child{border-bottom:0}.frow .fh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;line-height:1.7}.frow .fh .meta{text-align:start}
 .trow.now .tm{color:var(--accent)}
 .trow::before{content:"";width:20px;height:20px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
 .trow[data-k=fajr]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0M12 5v3M4.6 9.6l1.9 1.9M19.4 9.6l-1.9 1.9'/></svg>")}
@@ -451,9 +449,9 @@ nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent
 .mqscreen #mqwrap { position: relative; flex: 1; min-height: 0; width: 100vw; margin: 0; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #FFFFFF; }   /* تملأ كل المساحة تحت الشريط مباشرة (flex:1 بدل 100vh-56px حتى تراعي حواف الهاتف) */
 #mqimg { display: block; width: 100%; height: 100%; margin: 0; flex: none; object-fit: fill; border-radius: 0; background: #FFFFFF; transition: opacity .15s ease; user-select: none; -webkit-user-drag: none; transform-origin: center; }
 /* تكبير موحّد لكل الصفحات بلا إزاحة جانبية (الصورة موزونة في المنتصف أصلًا) */
-#mqimg { --ky: 0.985; transform: scale(var(--s, 1.09), clamp(1, calc(var(--ky) / var(--fy, 1)), 1.25)) translate(var(--tx, 0%), var(--ty, 0%)); }   /* العرض كما هو. الطول: الإطار الأزرق يملأ الارتفاع المتاح تقريبًا كله (٠٫٩٨٥) */   /* التوسيط والتكبير يُحسبان تلقائيًا لكل صفحة من موضع الإطار الأزرق في الصورة */
+#mqimg { --ky: 0.985; transform: scale(var(--s, 1.09), clamp(1, calc(var(--ky) / var(--fy, 1)), 1.25)) translate(var(--tx, 0%), var(--ty, 0%)); will-change: transform; }   /* العرض كما هو. الطول: الإطار الأزرق يملأ الارتفاع المتاح تقريبًا كله (٠٫٩٨٥) */   /* التوسيط والتكبير يُحسبان تلقائيًا لكل صفحة من موضع الإطار الأزرق في الصورة */
 #mqimg:not([src]) { visibility: hidden; }
-#mqimg.ld { opacity: .35; }
+#mqimg.ld { opacity: .85; transition: opacity .15s; }
 .mqscreen #mqwrap.zoom { overflow: auto; display: block; -webkit-overflow-scrolling: touch; }
 #mqwrap.zoom #mqimg { width: 220%; height: auto; max-width: none; object-fit: fill; transform: none; }
 .mqerr { position: absolute; inset-inline: 16px; top: 30%; z-index: 3; background: #F7FCFE; color: #0B1C2C; text-align: center; }
@@ -485,6 +483,11 @@ nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent
 .qpage.mtx { text-align: justify; text-align-last: center; direction: rtl; line-height: 2.35; margin: 6px 0; }
 .qpage.mtx .nb { white-space: nowrap; }
 </style>
+<script>/* منع التقريب بالإصبعين (iOS لا يحترم user-scalable) */
+['gesturestart','gesturechange','gestureend'].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});
+document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1&&e.cancelable)e.preventDefault()},{passive:false});
+document.addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},{passive:false});
+</script>
 </head>
 <body>
 <div id="app"><header class="top" id="top"></header><main id="main"></main></div>
@@ -1156,8 +1159,6 @@ var IC = {
   more: '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
   back: '<path d="M9 6l6 6-6 6"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
-  mosque2: '<path d=\"M6.5 20v-7.5a5.5 5.5 0 0 1 11 0V20M12 7V5.6M2.5 20h19M3.5 20V10l1.2-2.5L5.9 10v10M18.1 20V10l1.2-2.5 1.2 2.5v10\"/><path d=\"M10.3 20v-3.2a1.7 1.7 0 0 1 3.4 0V20\"/><circle cx=\"12\" cy=\"4.4\" r=\"1.1\"/>',
-  mosque: '<path d=\"M6 20v-7M18 20v-7M6 13a6 6 0 0 1 12 0M12 7V4.5M2.5 20h19M3 20V9.5l1.2-2.5 1.2 2.5V20M18.6 20V9.5l1.2-2.5 1.2 2.5V20\"/>',
   list: '<path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
   shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
@@ -1177,17 +1178,140 @@ var ORN = '<div class="orn"><i></i></div>';
 
 /* ---------- المدن ---------- */
 var CITIES = [
-  ['damascus', 'دمشق', 33.5138, 36.2765, 'Asia/Damascus'], ['aleppo', 'حلب', 36.2021, 37.1343, 'Asia/Damascus'], ['homs', 'حمص', 34.7324, 36.7137, 'Asia/Damascus'],
-  ['latakia', 'اللاذقية', 35.5317, 35.7898, 'Asia/Damascus'], ['amman', 'عمّان', 31.9454, 35.9284, 'Asia/Amman'], ['beirut', 'بيروت', 33.8938, 35.5018, 'Asia/Beirut'],
-  ['jerusalem', 'القدس', 31.7683, 35.2137, 'Asia/Jerusalem'], ['gaza', 'غزة', 31.5017, 34.4668, 'Asia/Gaza'], ['cairo', 'القاهرة', 30.0444, 31.2357, 'Africa/Cairo'],
-  ['makkah', 'مكة المكرمة', 21.3891, 39.8579, 'Asia/Riyadh'], ['madinah', 'المدينة المنورة', 24.4672, 39.6111, 'Asia/Riyadh'], ['jeddah', 'جدة', 21.4858, 39.1925, 'Asia/Riyadh'],
-  ['riyadh', 'الرياض', 24.7136, 46.6753, 'Asia/Riyadh'], ['doha', 'الدوحة', 25.2854, 51.531, 'Asia/Qatar'], ['dubai', 'دبي', 25.2048, 55.2708, 'Asia/Dubai'],
-  ['kuwait', 'الكويت', 29.3759, 47.9774, 'Asia/Kuwait'], ['baghdad', 'بغداد', 33.3152, 44.3661, 'Asia/Baghdad'], ['muscat', 'مسقط', 23.588, 58.3829, 'Asia/Muscat'],
-  ['sanaa', 'صنعاء', 15.3694, 44.191, 'Asia/Aden'], ['istanbul', 'إسطنبول', 41.0082, 28.9784, 'Europe/Istanbul'], ['tripoli', 'طرابلس (ليبيا)', 32.8872, 13.1913, 'Africa/Tripoli'],
-  ['tunis', 'تونس', 36.8065, 10.1815, 'Africa/Tunis'], ['algiers', 'الجزائر', 36.7538, 3.0588, 'Africa/Algiers'], ['casablanca', 'الدار البيضاء', 33.5731, -7.5898, 'Africa/Casablanca'],
-  ['khartoum', 'الخرطوم', 15.5007, 32.5599, 'Africa/Khartoum'], ['london', 'لندن', 51.5074, -0.1278, 'Europe/London'], ['paris', 'باريس', 48.8566, 2.3522, 'Europe/Paris'],
-  ['berlin', 'برلين', 52.52, 13.405, 'Europe/Berlin'], ['newyork', 'نيويورك', 40.7128, -74.006, 'America/New_York'], ['toronto', 'تورونتو', 43.6532, -79.3832, 'America/Toronto']
+  ['damascus','دمشق',33.5138,36.2765,'Asia/Damascus','سوريا'],
+  ['aleppo','حلب',36.2021,37.1343,'Asia/Damascus','سوريا'],
+  ['homs','حمص',34.7324,36.7137,'Asia/Damascus','سوريا'],
+  ['hama','حماة',35.1318,36.7578,'Asia/Damascus','سوريا'],
+  ['latakia','اللاذقية',35.5317,35.7898,'Asia/Damascus','سوريا'],
+  ['tartus','طرطوس',34.889,35.8866,'Asia/Damascus','سوريا'],
+  ['idlib','إدلب',35.9306,36.6339,'Asia/Damascus','سوريا'],
+  ['raqqa','الرقة',35.9528,39.0079,'Asia/Damascus','سوريا'],
+  ['deirez','دير الزور',35.3359,40.1408,'Asia/Damascus','سوريا'],
+  ['hasakah','الحسكة',36.5024,40.7477,'Asia/Damascus','سوريا'],
+  ['qamishli','القامشلي',37.0522,41.2314,'Asia/Damascus','سوريا'],
+  ['daraa','درعا',32.6189,36.1021,'Asia/Damascus','سوريا'],
+  ['suwayda','السويداء',32.709,36.5663,'Asia/Damascus','سوريا'],
+  ['quneitra','القنيطرة',33.1251,35.8244,'Asia/Damascus','سوريا'],
+  ['kobani','عين العرب (كوباني)',36.8903,38.3536,'Asia/Damascus','سوريا'],
+  ['palmyra','تدمر',34.56,38.284,'Asia/Damascus','سوريا'],
+  ['amman','عمّان',31.9454,35.9284,'Asia/Amman','الأردن'],
+  ['irbid','إربد',32.5556,35.85,'Asia/Amman','الأردن'],
+  ['zarqa','الزرقاء',32.0728,36.0876,'Asia/Amman','الأردن'],
+  ['aqaba','العقبة',29.5321,35.0063,'Asia/Amman','الأردن'],
+  ['beirut','بيروت',33.8938,35.5018,'Asia/Beirut','لبنان'],
+  ['tripoli_lb','طرابلس (لبنان)',34.4367,35.8497,'Asia/Beirut','لبنان'],
+  ['sidon','صيدا',33.563,35.3688,'Asia/Beirut','لبنان'],
+  ['jerusalem','القدس',31.7683,35.2137,'Asia/Jerusalem','فلسطين'],
+  ['gaza','غزة',31.5017,34.4668,'Asia/Jerusalem','فلسطين'],
+  ['ramallah','رام الله',31.9038,35.2034,'Asia/Jerusalem','فلسطين'],
+  ['nablus','نابلس',32.2211,35.2544,'Asia/Jerusalem','فلسطين'],
+  ['hebron','الخليل',31.5326,35.0998,'Asia/Jerusalem','فلسطين'],
+  ['baghdad','بغداد',33.3152,44.3661,'Asia/Baghdad','العراق'],
+  ['basra','البصرة',30.5085,47.7804,'Asia/Baghdad','العراق'],
+  ['mosul','الموصل',36.3489,43.1577,'Asia/Baghdad','العراق'],
+  ['erbil','أربيل',36.1911,44.0092,'Asia/Baghdad','العراق'],
+  ['najaf','النجف',32.0,44.3362,'Asia/Baghdad','العراق'],
+  ['karbala','كربلاء',32.616,44.0249,'Asia/Baghdad','العراق'],
+  ['makkah','مكة المكرمة',21.3891,39.8579,'Asia/Riyadh','السعودية'],
+  ['madinah','المدينة المنورة',24.4672,39.6111,'Asia/Riyadh','السعودية'],
+  ['jeddah','جدة',21.4858,39.1925,'Asia/Riyadh','السعودية'],
+  ['riyadh','الرياض',24.7136,46.6753,'Asia/Riyadh','السعودية'],
+  ['dammam','الدمام',26.4207,50.0888,'Asia/Riyadh','السعودية'],
+  ['abha','أبها',18.2164,42.5053,'Asia/Riyadh','السعودية'],
+  ['tabuk','تبوك',28.3838,36.555,'Asia/Riyadh','السعودية'],
+  ['taif','الطائف',21.2703,40.4158,'Asia/Riyadh','السعودية'],
+  ['buraydah','بريدة',26.326,43.975,'Asia/Riyadh','السعودية'],
+  ['hail','حائل',27.5114,41.7208,'Asia/Riyadh','السعودية'],
+  ['jizan','جازان',16.8892,42.5511,'Asia/Riyadh','السعودية'],
+  ['najran','نجران',17.4933,44.1277,'Asia/Riyadh','السعودية'],
+  ['yanbu','ينبع',24.0895,38.0618,'Asia/Riyadh','السعودية'],
+  ['cairo','القاهرة',30.0444,31.2357,'Africa/Cairo','مصر'],
+  ['alex','الإسكندرية',31.2001,29.9187,'Africa/Cairo','مصر'],
+  ['giza','الجيزة',30.0131,31.2089,'Africa/Cairo','مصر'],
+  ['luxor','الأقصر',25.6872,32.6396,'Africa/Cairo','مصر'],
+  ['aswan','أسوان',24.0889,32.8998,'Africa/Cairo','مصر'],
+  ['portsaid','بورسعيد',31.2653,32.3019,'Africa/Cairo','مصر'],
+  ['suez','السويس',29.9668,32.5498,'Africa/Cairo','مصر'],
+  ['mansoura','المنصورة',31.0409,31.3785,'Africa/Cairo','مصر'],
+  ['tanta','طنطا',30.7865,31.0004,'Africa/Cairo','مصر'],
+  ['sharm','شرم الشيخ',27.9158,34.33,'Africa/Cairo','مصر'],
+  ['hurghada','الغردقة',27.2579,33.8116,'Africa/Cairo','مصر'],
+  ['doha','الدوحة',25.2854,51.531,'Asia/Qatar','قطر'],
+  ['rayyan','الريان',25.2919,51.4244,'Asia/Qatar','قطر'],
+  ['wakrah','الوكرة',25.1715,51.6034,'Asia/Qatar','قطر'],
+  ['dubai','دبي',25.2048,55.2708,'Asia/Dubai','الإمارات'],
+  ['abudhabi','أبوظبي',24.4539,54.3773,'Asia/Dubai','الإمارات'],
+  ['sharjah','الشارقة',25.3463,55.4209,'Asia/Dubai','الإمارات'],
+  ['alain','العين',24.2075,55.7447,'Asia/Dubai','الإمارات'],
+  ['ajman','عجمان',25.4052,55.5136,'Asia/Dubai','الإمارات'],
+  ['rak','رأس الخيمة',25.7895,55.9432,'Asia/Dubai','الإمارات'],
+  ['kuwait','الكويت',29.3759,47.9774,'Asia/Kuwait','الكويت'],
+  ['hawalli','حولي',29.3328,48.0286,'Asia/Kuwait','الكويت'],
+  ['manama','المنامة',26.2285,50.586,'Asia/Bahrain','البحرين'],
+  ['muscat','مسقط',23.588,58.3829,'Asia/Muscat','عُمان'],
+  ['salalah','صلالة',17.0151,54.0924,'Asia/Muscat','عُمان'],
+  ['sohar','صحار',24.3419,56.7299,'Asia/Muscat','عُمان'],
+  ['sanaa','صنعاء',15.3694,44.191,'Asia/Aden','اليمن'],
+  ['aden','عدن',12.7855,45.0187,'Asia/Aden','اليمن'],
+  ['taiz','تعز',13.5795,44.0209,'Asia/Aden','اليمن'],
+  ['hodeidah','الحديدة',14.7979,42.954,'Asia/Aden','اليمن'],
+  ['mukalla','المكلا',14.5421,49.1243,'Asia/Aden','اليمن'],
+  ['tripoli','طرابلس (ليبيا)',32.8872,13.1913,'Africa/Tripoli','ليبيا'],
+  ['benghazi','بنغازي',32.1167,20.0667,'Africa/Tripoli','ليبيا'],
+  ['misrata','مصراتة',32.3754,15.0925,'Africa/Tripoli','ليبيا'],
+  ['sabha','سبها',27.0377,14.4283,'Africa/Tripoli','ليبيا'],
+  ['tunis','تونس',36.8065,10.1815,'Africa/Tunis','تونس'],
+  ['sfax','صفاقس',34.7406,10.7603,'Africa/Tunis','تونس'],
+  ['sousse','سوسة',35.8256,10.6369,'Africa/Tunis','تونس'],
+  ['kairouan','القيروان',35.6781,10.0963,'Africa/Tunis','تونس'],
+  ['algiers','الجزائر',36.7538,3.0588,'Africa/Algiers','الجزائر'],
+  ['oran','وهران',35.6971,-0.6308,'Africa/Algiers','الجزائر'],
+  ['constantine','قسنطينة',36.365,6.6147,'Africa/Algiers','الجزائر'],
+  ['annaba','عنابة',36.9,7.7667,'Africa/Algiers','الجزائر'],
+  ['ghardaia','غرداية',32.4909,3.6735,'Africa/Algiers','الجزائر'],
+  ['casablanca','الدار البيضاء',33.5731,-7.5898,'Africa/Casablanca','المغرب'],
+  ['rabat','الرباط',34.0209,-6.8416,'Africa/Casablanca','المغرب'],
+  ['marrakech','مراكش',31.6295,-7.9811,'Africa/Casablanca','المغرب'],
+  ['fes','فاس',34.0331,-5.0003,'Africa/Casablanca','المغرب'],
+  ['tangier','طنجة',35.7595,-5.834,'Africa/Casablanca','المغرب'],
+  ['agadir','أكادير',30.4278,-9.5981,'Africa/Casablanca','المغرب'],
+  ['khartoum','الخرطوم',15.5007,32.5599,'Africa/Khartoum','السودان'],
+  ['omdurman','أم درمان',15.6445,32.4777,'Africa/Khartoum','السودان'],
+  ['portsudan','بورتسودان',19.6158,37.2164,'Africa/Khartoum','السودان'],
+  ['nouakchott','نواكشوط',18.0735,-15.9582,'Africa/Nouakchott','موريتانيا'],
+  ['nouadhibou','نواذيبو',20.931,-17.0347,'Africa/Nouakchott','موريتانيا'],
+  ['mogadishu','مقديشو',2.0469,45.3182,'Africa/Mogadishu','الصومال'],
+  ['hargeisa','هرجيسا',9.56,44.065,'Africa/Mogadishu','الصومال'],
+  ['djibouti','جيبوتي',11.5721,43.1456,'Africa/Djibouti','جيبوتي'],
+  ['moroni','موروني',-11.7172,43.2473,'Indian/Comoro','جزر القمر'],
+  ['istanbul','إسطنبول',41.0082,28.9784,'Europe/Istanbul','تركيا'],
+  ['ankara','أنقرة',39.9334,32.8597,'Europe/Istanbul','تركيا'],
+  ['izmir','إزمير',38.4237,27.1428,'Europe/Istanbul','تركيا'],
+  ['gaziantep','غازي عنتاب',37.0662,37.3833,'Europe/Istanbul','تركيا'],
+  ['hatay','هاتاي (أنطاكية)',36.4018,36.3498,'Europe/Istanbul','تركيا'],
+  ['sanliurfa','شانلي أورفا',37.1591,38.7969,'Europe/Istanbul','تركيا'],
+  ['bursa','بورصة',40.1885,29.061,'Europe/Istanbul','تركيا'],
+  ['tehran','طهران',35.6892,51.389,'Asia/Tehran','إيران'],
+  ['karachi','كراتشي',24.8607,67.0011,'Asia/Karachi','باكستان'],
+  ['lahore','لاهور',31.5204,74.3587,'Asia/Karachi','باكستان'],
+  ['islamabad','إسلام آباد',33.6844,73.0479,'Asia/Karachi','باكستان'],
+  ['dhaka','دكا',23.8103,90.4125,'Asia/Dhaka','بنغلاديش'],
+  ['jakarta','جاكرتا',-6.2088,106.8456,'Asia/Jakarta','إندونيسيا'],
+  ['kl','كوالالمبور',3.139,101.6869,'Asia/Kuala_Lumpur','ماليزيا'],
+  ['london','لندن',51.5074,-0.1278,'Europe/London','بريطانيا'],
+  ['manchester','مانشستر',53.4808,-2.2426,'Europe/London','بريطانيا'],
+  ['paris','باريس',48.8566,2.3522,'Europe/Paris','فرنسا'],
+  ['berlin','برلين',52.52,13.405,'Europe/Berlin','ألمانيا'],
+  ['hamburg','هامبورغ',53.5511,9.9937,'Europe/Berlin','ألمانيا'],
+  ['stockholm','ستوكهولم',59.3293,18.0686,'Europe/Stockholm','السويد'],
+  ['amsterdam','أمستردام',52.3676,4.9041,'Europe/Amsterdam','هولندا'],
+  ['newyork','نيويورك',40.7128,-74.006,'America/New_York','أمريكا'],
+  ['chicago','شيكاغو',41.8781,-87.6298,'America/Chicago','أمريكا'],
+  ['losangeles','لوس أنجلوس',34.0522,-118.2437,'America/Los_Angeles','أمريكا'],
+  ['toronto','تورونتو',43.6532,-79.3832,'America/Toronto','كندا'],
+  ['sydney','سيدني',-33.8688,151.2093,'Australia/Sydney','أستراليا']
 ];
+function methodFor(tz) { return /^Asia\/(Riyadh|Qatar|Kuwait|Dubai|Muscat|Aden|Bahrain)$/.test(tz) ? 'makkah' : tz === 'Africa/Cairo' ? 'egypt' : /^Asia\/(Karachi|Dhaka|Kolkata)$/.test(tz) ? 'karachi' : 'mwl'; }
 function devTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } }
 
 /* ---------- الحالة ---------- */
@@ -1198,10 +1322,8 @@ function defaults() {
       city: 'damascus', lat: 33.5138, lng: 36.2765, tz: 'Asia/Damascus', method: 'mwl', asr: 1, theme: 'auto', qfont: 'madina', qsize: 24, sound: true,
       alerts: { fajr: 1, sunrise: 0, dhuhr: 1, asr: 1, maghrib: 1, isha: 1 },
       fajrEarly: { on: 1, min: 30 }, jumuah: { on: 1, min: 60 }, salawat: { on: 1, min: 60 }, dhikr: { on: 1, min: 45 }, mAdhkar: 1, eAdhkar: 1,
-      fast: { mon: 1, thu: 1, white: 1, extra: 1, eve: 1, sahurOn: 1, sahur: 45, adj: 0 },
-      wird: { on: 0, list: [{ pages: 2, time: '20:00', every: 0 }] }
+      fast: { mon: 1, thu: 1, white: 1, extra: 1, eve: 1, sahurOn: 1, sahur: 45, adj: 0 }
     },
-    wird: { next: 1, doneDay: '', done: 0 },
     tasks: [], td: {}, letters: [], qmark: null, fasts: {}, zc: {}, tc: {}, tt: {}, tday: {}, fired: {}, updatedAt: 0
   };
 }
@@ -1369,27 +1491,7 @@ var LAST = { salawat: Date.now(), dhikr: Date.now() };
 var SAL = ['اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', 'صَلَّى اللَّهُ عَلَى مُحَمَّدٍ وَسَلَّمَ', 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ'];
 var DHK = ['سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ', 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', 'لَا إِلَهَ إِلَّا اللَّهُ', 'سُبْحَانَ اللَّهِ الْعَظِيمِ', 'الْحَمْدُ لِلَّهِ', 'اللَّهُ أَكْبَرُ'];
 function pickRand(a) { return a[Math.floor(Math.random() * a.length)]; }
-function localAt(p, tz, h, mi) {   // لحظة الساعة h:mi بتوقيت المدينة في يوم p
-  var g = Date.UTC(p.y, p.m - 1, p.d, h, mi), base = g, i, q;
-  for (i = 0; i < 2; i++) { q = RL.partsIn(g, tz); g = base - (Date.UTC(q.y, q.m - 1, q.d, q.h, q.mi) - g); }
-  return g;
-}
-function wList() { var l = S.set.wird && S.set.wird.list; if (!Array.isArray(l) || !l.length) { S.set.wird.list = l = [{ pages: 2, time: '20:00', every: 0 }]; } return l; }
-function wDone() { return S.wird.doneDay === today() ? Math.min(S.wird.done | 0, wList().length) : 0; }
-function wirdPlan(off) {   // جلسات الورد في اليوم off (0 اليوم): كل جلسة {i, a, b, done, time, every}
-  var l = wList(), dn = off === 0 ? wDone() : 0, pend = 0, tot = 0, i, st, out = [];
-  l.forEach(function (x, k) { var p = Math.max(1, +x.pages || 1); tot += p; if (k >= wDone()) pend += p; });
-  st = S.wird.next + (off === 0 ? 0 : pend + (off - 1) * tot);
-  for (i = 0; i < l.length; i++) {
-    var p = Math.max(1, +l[i].pages || 1);
-    if (i < dn) { out.push({ i: i, done: true, time: l[i].time, every: l[i].every }); continue; }
-    out.push({ i: i, done: false, a: ((st - 1) % 604) + 1, b: ((st + p - 2) % 604) + 1, time: l[i].time, every: l[i].every });
-    st += p;
-  }
-  return out;
-}
-function wirdTxt(r) { return r.a === r.b ? 'صفحة ' + ar(r.a) : 'من صفحة ' + ar(r.a) + ' إلى صفحة ' + ar(r.b); }
-function dayEvents(tt, ms, dOff) {   // ms: لجدولة يوم آخر غير اليوم (يُحسب الصيام لذلك اليوم)
+function dayEvents(tt, ms) {   // ms: لجدولة يوم آخر غير اليوم (يُحسب الصيام لذلك اليوم)
   var s = S.set, t = tt.t, ev = [], fri = isFriday(tt);
   ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].forEach(function (k) {
     if (s.alerts[k] && !isNaN(t[k])) ev.push({ key: 'p-' + k, at: t[k], kind: k === 'sunrise' ? 'n' : 'adhan', title: k === 'sunrise' ? 'طلعت الشمس' : 'حان الآن موعد صلاة ' + (k === 'dhuhr' && fri ? 'الجمعة' : PNAME[k]), body: k === 'sunrise' ? 'وقت صلاة الضحى يبدأ بعد نحو ربع ساعة.' : 'حيّ على الصلاة، حيّ على الفلاح.' });
@@ -1401,11 +1503,6 @@ function dayEvents(tt, ms, dOff) {   // ms: لجدولة يوم آخر غير ا
   var fp = ms ? { a: fastInfo(ms, tt.tz), b: fastInfo(ms + FDAY, tt.tz) } : fastPair(tt), f = s.fast;
   if (f.eve && fp.b && FLAB[fp.b.kind] && !isNaN(t.isha)) ev.push({ key: 'fn', at: t.isha, title: 'غدًا ' + FLAB[fp.b.kind], body: 'انوِ الصيام من الليل، وتسحّر فإن في السحور بركة.\n' + fadlOf(fp.b.kind) });
   if (f.sahurOn && fp.a && FLAB[fp.a.kind] && !isNaN(t.fajr)) ev.push({ key: 'fs', at: t.fajr - f.sahur * 60000, title: 'وقت السحور', body: 'اليوم ' + FLAB[fp.a.kind] + '. تسحّر وانوِ الصيام.\n' + fadlOf(fp.a.kind) });
-  if (s.wird && s.wird.on) wirdPlan(dOff || 0).forEach(function (r) {
-    if (r.done) return;
-    var tp = String(r.time || '20:00').split(':'), t0 = localAt(tt.p, tt.tz, +tp[0] || 0, +tp[1] || 0), stp = (+r.every || 0) * 60000, endAt = localAt(tt.p, tt.tz, 22, 0), k, n = wList().length;
-    for (k = 0; k < 8; k++) { var wat = t0 + k * stp; if (k > 0 && (!stp || wat > endAt)) break; ev.push({ key: 'w' + r.i + '-' + k, at: wat, title: n > 1 ? 'وردك من القرآن (' + ar(r.i + 1) + ')' : 'وردك اليوم من القرآن', body: wirdTxt(r) + '. افتح المصحف وأتمّ وردك.' }); }
-  });
   return ev;
 }
 function tick() {
@@ -1430,7 +1527,7 @@ function buildSched() {
   for (d = 0; d < 3; d++) {
     p = RL.partsIn(now + d * FDAY, tz); noon = Date.UTC(p.y, p.m - 1, p.d, 12);
     tt = { p: p, tz: tz, key: RL.ymdKey(now + d * FDAY, tz), t: RL.prayerTimes(p.y, p.m, p.d, +s.lat, +s.lng, s.method, +s.asr) };
-    dayEvents(tt, noon, d).forEach(function (ev) { if (ev.at > now - 3600000) out.push({ id: 'd' + tt.key + '-' + ev.key, at: ev.at, title: ev.title, body: ev.body, kind: ev.kind || 'n' }); });
+    dayEvents(tt, noon).forEach(function (ev) { if (ev.at > now - 3600000) out.push({ id: 'd' + tt.key + '-' + ev.key, at: ev.at, title: ev.title, body: ev.body, kind: ev.kind || 'n' }); });
   }
   function nearFixed(at) { return out.some(function (x) { return Math.abs(x.at - at) < 6 * 60000; }); }   // لا حدثان متقاربان (صلاة/ذكر/صلاة على النبي)
   function quiet(at) { var q = RL.partsIn(at, tz), m = q.h * 60 + q.mi; return m >= 1410 || m < 240; }   // لا تذكير عام بين ١١:٣٠ ليلًا و٤ فجرًا
@@ -1447,7 +1544,7 @@ function buildSched() {
 function pushSched(force) {
   try {
     if (!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
-    var sig = JSON.stringify([S.set.alerts, S.set.fast, S.set.wird, S.wird, S.set.salawat, S.set.dhikr, S.set.fajrEarly, S.set.jumuah, S.set.mAdhkar, S.set.eAdhkar, S.set.city, S.set.method, S.set.asr, S.set.lat, S.set.lng, Math.floor(Date.now() / 21600000)]);
+    var sig = JSON.stringify([S.set.alerts, S.set.fast, S.set.salawat, S.set.dhikr, S.set.fajrEarly, S.set.jumuah, S.set.mAdhkar, S.set.eAdhkar, S.set.city, S.set.method, S.set.asr, S.set.lat, S.set.lng, Math.floor(Date.now() / 21600000)]);
     if (!force && sig === SCH.last) return;
     SCH.last = sig;
     var ev = buildSched();
@@ -1689,32 +1786,8 @@ function surahListHtml() {
   }
   return out || '<div class="empty">لا توجد سورة بهذا الاسم.</div>';
 }
-function wirdCard() {
-  var w = S.set.wird, l = wList(), plan = wirdPlan(0), nxt = null, h = '<div class="card stack"><b>وردي اليومي</b>', i;
-  if (w.on) {
-    plan.forEach(function (r) { if (!r.done && !nxt) nxt = r; });
-    h += plan.map(function (r) { return '<div class="bigline" style="font-size:' + (r.done ? 16 : 19) + 'px">' + (l.length > 1 ? 'الورد ' + ar(r.i + 1) + ': ' : 'وردك اليوم: ') + (r.done ? 'تم ✓' : wirdTxt(r)) + '</div>'; }).join('');
-    if (nxt) h += '<div class="row"><a class="btn primary" href="#quran-p' + nxt.a + '">افتح صفحة ' + ar(nxt.a) + '</a><button class="btn" data-act="wirddone">أتممت ' + (l.length > 1 ? 'الورد ' + ar(nxt.i + 1) : 'وردي') + '</button></div>';
-    else { var t1 = wirdPlan(1)[0]; h += '<p class="meta">أتممت وردك اليوم، تقبّل الله منك. وردك غدًا يبدأ من صفحة ' + ar(t1.a) + '.</p>'; }
-    if (wDone() > 0) h += '<button class="btn ghost" data-act="wirdundo">تراجع عن آخر ورد</button>';
-  }
-  h += sw('ورد يومي مع إشعار', 'wird.on', w.on);
-  if (w.on) {
-    for (i = 0; i < l.length; i++) {
-      h += '<div class="card stack" style="background:var(--surface2)"><b>' + (l.length > 1 ? 'الورد ' + ar(i + 1) : 'إعداد الورد') + '</b>' + num('عدد الصفحات', 'wird.list.' + i + '.pages', l[i].pages, 1, 60) +
-        '<label class="fld">وقت التذكير<input type="time" data-path="wird.list.' + i + '.time" value="' + esc(l[i].time || '20:00') + '"></label>' +
-        '<label class="fld">كرّر التذكير<select data-path="wird.list.' + i + '.every" data-num="1">' + [[0, 'مرة واحدة'], [60, 'كل ساعة'], [120, 'كل ساعتين'], [180, 'كل ٣ ساعات']].map(function (o) { return '<option value="' + o[0] + '"' + (+l[i].every === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>' +
-        (l.length > 1 ? '<button class="btn ghost" data-act="wirddel" data-i="' + i + '">حذف هذا الورد</button>' : '') + '</div>';
-    }
-    h += '<button class="btn" data-act="wirdadd">+ إضافة ورد آخر في اليوم</button>' +
-      '<label class="fld">أبدأ من صفحة<input type="number" id="wstart" inputmode="numeric" min="1" max="604" value="' + S.wird.next + '"></label>' +
-      '<p class="meta">أضف ما تشاء من الأوراد في اليوم (ورد بعد الفجر وآخر بعد العصر وثالث قبل النوم). كل ورد له وقته وعدد صفحاته، وتتابع الصفحات بينها. يصلك «وردك من القرآن، من صفحة كذا إلى كذا»، ويتكرر إن أردت حتى العاشرة مساءً أو حتى تضغط «أتممت».</p>';
-  }
-  return h + '</div>';
-}
 function viewQuranHome() {
   var h = '<div class="stack">';
-  h += wirdCard();
   if (!quranOk()) h += '<div class="qmiss">نص المصحف غير مكتمل في هذه النسخة.</div>';
   if (S.qmark) h += '<a class="btn primary" href="#quran-' + (S.qmark.p ? 'p' + S.qmark.p : S.qmark.s) + '" data-act="qresume">تابع القراءة: ' + (S.qmark.pg ? 'صفحة ' + ar(S.qmark.p) + ' (سورة ' + RS.names[S.qmark.s - 1] + ')' : 'سورة ' + RS.names[S.qmark.s - 1] + '، الآية ' + ar(S.qmark.a)) + '</a>';
   h += '<div class="row"><input type="number" id="qjump" min="1" max="604" inputmode="numeric" placeholder="اذهب إلى صفحة (١–٦٠٤)" aria-label="رقم الصفحة" style="flex:1;min-width:0"><button class="btn" data-act="qjump">اذهب</button></div>';
@@ -1867,12 +1940,12 @@ function qTitle(n, d) { var t = $('#top h1'), f = d && d.surahs && d.surahs[0]; 
 var QIMG = { raw: 'https://raw.githubusercontent.com/apkhpals-svg/ruh-almuslim/main/', cdn: 'https://cdn.jsdelivr.net/gh/apkhpals-svg/ruh-almuslim@main/' };   // صور مصحف المدينة الكبير الأزرق: الغلاف = ملف 1، وصفحة 1 = ملف 5 (رقم الملف = الصفحة + 4)
 function qImgSrcs(n) {   // الترتيب: مسار الصفحة النسبي (NFC ثم NFD)، raw.githubusercontent (NFC ثم NFD)، jsDelivr (NFC ثم NFD). رقم الملف = الصفحة + 4
   var nm = 'مصحف المدينة الكبير الأزرق_' + (n + 4) + '.jpg', out = [];
-  ['./', QIMG.cdn, QIMG.raw].forEach(function (b) { ['NFC', 'NFD'].forEach(function (f) { out.push(b + encodeURIComponent(nm.normalize(f))); }); });
+  ['./', QIMG.raw, QIMG.cdn].forEach(function (b) { ['NFC', 'NFD'].forEach(function (f) { out.push(b + encodeURIComponent(nm.normalize(f))); }); });
   return out;
 }
 function qImgSrc(n, alt) { return qImgSrcs(n)[alt | 0]; }
 var qSwipeAt = 0;
-var QC = {}, QP = {}, QOK = +(function () { try { return localStorage.getItem('ruh-qok'); } catch (e) { return 0; } })() || 0, QPRE = {}, QM = {}, QMKEY = 'ruh-qm-v2', QMT = 0;
+var QC = {}, QP = {}, QOK = 0, QPRE = {}, QM = {}, QMKEY = 'ruh-qm-v2', QMT = 0;
 try { QM = JSON.parse(localStorage.getItem(QMKEY)) || {}; } catch (e) { QM = {}; }   // قياسات الصفحات محفوظة: تُحسب مرة واحدة فقط لكل صفحة
 var QFILL = 0.99;    // نسبة عرض الإطار الأزرق إلى عرض الشاشة (زِدها لتكبير العرض، أو انقصها لإظهار هوامش أكثر)
 function qFromQM(a) { return { s: Math.min(1.15, Math.max(1, QFILL / a[0])), tx: a[1], fy: a[2], ty: a[3] }; }   // المحفوظ: [عرض الإطار، إزاحته أفقيًا، ارتفاعه، إزاحته رأسيًا] كنسب من الصورة
@@ -1889,52 +1962,70 @@ function qScan(src, W, H) {   // يقيس الإطار الأزرق (عرضه و
   if (t >= 0 && b - t > H * 0.6) { a[2] = (b - t + 1) / H; a[3] = 0.5 - (t + b + 1) / 2 / H; }
   return a.map(function (v) { return +v.toFixed(4); });
 }
-function qMeasure(im, n) {   // غير متزامن: يقرأ نسخة مصغّرة بعيدًا عن الخيط الرئيسي ثم يحفظ النتيجة
-  if (QM[n]) return Promise.resolve(qFromQM(QM[n]));
-  var W = 300, H = Math.max(1, Math.round(W * im.naturalHeight / im.naturalWidth));
-  var p = window.createImageBitmap ? createImageBitmap(im, { resizeWidth: W, resizeHeight: H, resizeQuality: 'medium' }).then(function (bm) { var a = qScan(bm, W, H); if (bm.close) bm.close(); return a; }) : Promise.resolve().then(function () { return qScan(im, W, H); });
-  return p.catch(function () { try { return qScan(im, W, H); } catch (e) { return null; } }).then(function (a) {
-    if (!a) return { s: 1.09, tx: 0, fy: 1, ty: 0 };
-    QM[n] = a; clearTimeout(QMT); QMT = setTimeout(function () { try { localStorage.setItem(QMKEY, JSON.stringify(QM)); } catch (e) {} }, 2000);
-    return qFromQM(a);
-  });
-}
-function qTrim(cur) {   // الذاكرة: لا نُبقي صورًا مفكوكة الترميز إلا للصفحة الحالية وجارتيها (الصورة الكاملة تأخذ ١٠–٢٠ ميغابايت مفكوكة)
-  Object.keys(QC).forEach(function (k) { var d = Math.abs(k - cur); if (d > 4) delete QC[k]; else if (d > 1 && QC[k].im) delete QC[k].im; });
-}
-function qLoad(n, cb, pre) {   // يحمّل صفحة (ويقيسها) مرة واحدة ثم يعطي النتيجة للجميع. pre: تحميل مسبق بأولوية منخفضة
-  if (QC[n]) return cb(QC[n]);
-  if (QP[n]) { QP[n].push(cb); if (!pre && QPRE[n]) QPRE[n].fetchPriority = 'high'; return; }
-  QP[n] = [cb];
+/* الصور الأصلية ٣٠٧٢×٤٤١٣ بكسل (١٣٫٥ ميغابكسل، أي نحو ٥٤ ميغابايت مفكوكة لكل صفحة) وهذا سبب التعليق. نصغّرها مرة واحدة في خيط خلفي إلى عرض ١٨٠٠ ونحفظ النسخة الصغيرة في الجهاز، فتفتح كل صفحة بعدها فورًا حتى دون إنترنت */
+var QW = 1400, QSK = 'ruh-qimg-s1400-v1';
+try { if (window.caches) caches.delete('ruh-qimg-s1800-v1'); } catch (e) {}
+function qCacheReq(n) { return new Request(location.origin + '/__qs/' + n); }
+function qCacheGet(n) { return (window.caches ? caches.open(QSK).then(function (c) { return c.match(qCacheReq(n)); }).then(function (r) { return r ? r.blob() : null; }) : Promise.resolve(null)).catch(function () { return null; }); }
+function qCachePut(n, blob) { try { if (window.caches) caches.open(QSK).then(function (c) { return c.put(qCacheReq(n), new Response(blob, { headers: { 'Content-Type': 'image/jpeg' } })); }).catch(function () {}); } catch (e) {} }
+function qFetch(n, pre, ctl) {   // يجرّب الروابط بالترتيب (يبدأ بما نجح سابقًا) ويعيد ملف الصورة
   var list = qImgSrcs(n), order = [QOK].concat(list.map(function (_, k) { return k; }).filter(function (k) { return k !== QOK; }));
-  (function go(j) {
-    if (!QP[n]) return;   // أُلغي التحميل
-    if (j >= order.length) { var cbs = QP[n]; delete QP[n]; delete QPRE[n]; cbs.forEach(function (f) { f(null); }); return; }
-    var im = new Image(); im.crossOrigin = 'anonymous'; im.decoding = 'async'; im.fetchPriority = pre ? 'low' : 'high'; QPRE[n] = im;
-    im.onload = function () {
-      if (!QP[n]) return;
-      QOK = order[j]; try { localStorage.setItem('ruh-qok', QOK); } catch (e) {}
-      qMeasure(im, n).then(function (m) {
-        if (!QP[n]) return;
-        var e = { src: im.src, s: m.s, tx: m.tx, fy: m.fy, ty: m.ty }; if (Math.abs(n - (qImgShow.cur || n)) <= 1) e.im = im;
-        QC[n] = e; delete QPRE[n]; qTrim(qImgShow.cur || n);
-        var cbs = QP[n]; delete QP[n]; cbs.forEach(function (f) { f(e); });
-      });
-    };
-    im.onerror = function () { go(j + 1); };
-    im.src = list[order[j]];
+  return (function go(j) {
+    if (j >= order.length) return Promise.resolve(null);
+    return fetch(list[order[j]], { signal: ctl.signal, mode: 'cors', priority: pre ? 'low' : 'high' }).then(function (r) { return r.ok ? r.blob() : null; }).then(function (b) {
+      if (b && b.size > 1000) { QOK = order[j]; return b; }
+      return go(j + 1);
+    }, function (e) { if (e && e.name === 'AbortError') throw e; return go(j + 1); });
   })(0);
 }
+function qSaveMeasure(n, a) { QM[n] = a; clearTimeout(QMT); QMT = setTimeout(function () { try { localStorage.setItem(QMKEY, JSON.stringify(QM)); } catch (e) {} }, 2000); }
+function qProduce(n, pre, ctl) {   // يعيد {src, s, tx, fy, ty} للصفحة n
+  return qCacheGet(n).then(function (small) {
+    if (small && QM[n]) return Object.assign({ src: URL.createObjectURL(small) }, qFromQM(QM[n]));   // محفوظة ومقيسة: لا عمل إضافي
+    return (small ? Promise.resolve(small) : qFetch(n, pre, ctl)).then(function (blob) {
+      if (!blob) return null;
+      if (ctl.signal && ctl.signal.aborted) throw new Error('abort');
+      if (!window.createImageBitmap) return Object.assign({ src: URL.createObjectURL(blob) }, { s: 1.09, tx: 0, fy: 1, ty: 0 });
+      return createImageBitmap(blob, small ? undefined : { resizeWidth: QW, resizeQuality: 'high' }).then(function (bm) {
+        var W = 300, H = Math.max(1, Math.round(W * bm.height / bm.width)), a = QM[n];
+        if (!a) { try { a = qScan(bm, W, H); } catch (e) { a = null; } if (a) qSaveMeasure(n, a); }
+        var m = a ? qFromQM(a) : { s: 1.09, tx: 0, fy: 1, ty: 0 };
+        if (small) { bm.close && bm.close(); return Object.assign({ src: URL.createObjectURL(small) }, m); }
+        var cv = document.createElement('canvas'); cv.width = bm.width; cv.height = bm.height; cv.getContext('2d').drawImage(bm, 0, 0); bm.close && bm.close();
+        return new Promise(function (res) { cv.toBlob(res, 'image/jpeg', 0.9); }).then(function (out) {
+          cv.width = cv.height = 0; if (!out) return Object.assign({ src: URL.createObjectURL(blob) }, m);
+          qCachePut(n, out); return Object.assign({ src: URL.createObjectURL(out) }, m);
+        });
+      });
+    });
+  });
+}
+function qTrim(cur) {   // يحرّر الذاكرة: لا نُبقي إلا الصفحات القريبة من الحالية
+  Object.keys(QC).forEach(function (k) { if (Math.abs(k - cur) > 8) { try { URL.revokeObjectURL(QC[k].src); } catch (e) {} delete QC[k]; } });
+}
+function qLoad(n, cb, pre) {   // يحمّل صفحة مرة واحدة ثم يعطي النتيجة لكل من انتظرها. pre: تحميل مسبق بأولوية منخفضة
+  if (QC[n]) return cb(QC[n]);
+  if (QP[n]) { QP[n].push(cb); return; }
+  var mine = QP[n] = [cb], ctl = window.AbortController ? new AbortController() : { signal: undefined, abort: function () {} };
+  QPRE[n] = ctl;
+  function fin(e) {
+    if (QP[n] !== mine) return;   // أُلغي أو استُبدل
+    delete QP[n]; delete QPRE[n];
+    if (e) { QC[n] = e; qTrim(qImgShow.cur || n); }
+    mine.forEach(function (f) { f(e); });
+  }
+  qProduce(n, pre, ctl).then(fin, function () { fin(null); });
+}
 function qCancelPre(keep) {   // ينهي التحميلات المسبقة المعلّقة كي لا تزاحم الصفحة التي يريدها القارئ الآن
-  Object.keys(QPRE).forEach(function (k) { if (+k === keep) return; var im = QPRE[k]; delete QPRE[k]; delete QP[k]; try { im.onload = im.onerror = null; im.src = ''; } catch (e) {} });
+  Object.keys(QPRE).forEach(function (k) { if (+k === keep) return; var c = QPRE[k]; delete QPRE[k]; delete QP[k]; try { c.abort(); } catch (e) {} });
 }
 function qImgPre(n) {   // يحمّل الجارتين واحدةً بعد واحدة، ثم الثانية بعدهما
-  var list = [n + 1, n - 1].filter(function (k) { return k >= 1 && k <= 604; }), tk = qImgShow.t;
-  (function nx(i) { if (i >= list.length || tk !== qImgShow.t) return; qLoad(list[i], function () { setTimeout(function () { nx(i + 1); }, 400); }, true); })(0);
+  var dir = qImgShow.dir || 1, list = [n + dir, n + 2 * dir, n - dir, n + 3 * dir, n + 4 * dir, n + 5 * dir, n - 2 * dir].filter(function (k) { return k >= 1 && k <= 604; }), tk = qImgShow.t;
+  (function nx(i) { if (i >= list.length || tk !== qImgShow.t) return; qLoad(list[i], function () { setTimeout(function () { nx(i + 1); }, 40); }, true); })(0);
 }
 function qImgShow(n) {   // الصفحة الجاهزة تظهر فورًا بلا وميض. الصورة الجديدة تُفكّ ترميزها وهي خارج الشاشة ثم تُستبدل بالقديمة دفعة واحدة، فلا يتجمّد التمرير
   var img = $('#mqimg'); if (!img) return;
-  var tok = qImgShow.t = (qImgShow.t || 0) + 1; qImgShow.cur = n;
+  var tok = qImgShow.t = (qImgShow.t || 0) + 1; if (qImgShow.cur && n !== qImgShow.cur) qImgShow.dir = n > qImgShow.cur ? 1 : -1; qImgShow.cur = n;
   function apply(e) {
     if (tok !== qImgShow.t) return;
     var old = $('#mqimg'); if (!old) return;
@@ -1943,7 +2034,7 @@ function qImgShow(n) {   // الصفحة الجاهزة تظهر فورًا بل
       var er = $('#mqerr'); if (er) { var lk = er.querySelector('.qerru'); if (!lk) { lk = document.createElement('a'); lk.className = 'qerru'; lk.target = '_blank'; lk.rel = 'noopener'; lk.style.cssText = 'display:block;margin-top:10px;font-size:13px;text-decoration:underline'; lk.textContent = 'افتح رابط الصورة للتحقق منه'; er.appendChild(lk); } lk.href = qImgSrc(n, 2); er.hidden = false; }
       return;
     }
-    var nx = new Image(); nx.id = 'mqimg'; nx.crossOrigin = 'anonymous'; nx.decoding = 'async'; nx.draggable = false; nx.alt = 'صفحة ' + n + ' من مصحف المدينة';
+    var nx = new Image(); nx.id = 'mqimg'; nx.decoding = 'async'; nx.draggable = false; nx.alt = 'صفحة ' + n + ' من مصحف المدينة';
     nx.className = old.className.replace(/\bld\b/, '').trim();
     nx.style.setProperty('--s', e.s.toFixed(4)); nx.style.setProperty('--tx', (e.tx * 100).toFixed(2) + '%');
     nx.style.setProperty('--fy', e.fy.toFixed(4)); nx.style.setProperty('--ty', (e.ty * 100).toFixed(2) + '%');
@@ -1954,7 +2045,8 @@ function qImgShow(n) {   // الصفحة الجاهزة تظهر فورًا بل
   var er0 = $('#mqerr'); if (er0) er0.hidden = true;
   if (QC[n]) return apply(QC[n]);
   qCancelPre(n); img.classList.add('ld');
-  qLoad(n, apply);
+  clearTimeout(qImgShow.dl);   // أثناء التقليب السريع لا نحمّل إلا الصفحة التي يتوقف عندها القارئ
+  qImgShow.dl = setTimeout(function () { if (tok === qImgShow.t) qLoad(n, apply); }, 45);
 }
 function qImgGo(n) {   // تغيير رقم الصفحة مباشرة (بلا إعادة بناء الشاشة)
   n = Math.max(1, Math.min(604, n | 0)); Q.pg = n;
@@ -1977,7 +2069,6 @@ function viewQuranPage(n) {
     '<button class="mqb mqpg tnum" id="mqcount" data-act="qjt" aria-label="الانتقال إلى صفحة">' + ar(n) + ' / ' + ar(604) + '</button>' +
     '<button class="mqb" id="mqnext" data-act="qpg" data-d="1" aria-label="الصفحة التالية"' + (n >= 604 ? ' disabled' : '') + '><span class="flip">' + svg('back') + '</span></button>' +
     '<span class="grow"></span>' +
-    '<button class="mqb" data-act="qzoom" id="mqzoom" aria-pressed="false" aria-label="تكبير"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5M11 8v6M8 11h6"/></svg></button>' +
     '<button class="mqb" data-act="qbm" id="mqbm" aria-pressed="' + bm + '" aria-label="علّم هذه الصفحة للمتابعة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v16l-5-3.5L7 20z"/></svg></button>' +
     '<a class="mqb" id="mqtext" href="#quran-m' + n + '">نص</a></div>' + 
     '<div id="mqwrap"><img id="mqimg" class="ld" alt="صفحة ' + n + ' من مصحف المدينة" decoding="async" draggable="false"><div class="qmiss mqerr" id="mqerr" hidden>تعذّر تحميل صورة الصفحة. تحتاج الصور إلى اتصال بالإنترنت.<div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="qretry">إعادة المحاولة</button><a class="btn sm ghost" id="mqerrtext" href="#quran-t' + qSurahOfPage(n) + '">عرض النص</a></div></div></div>' +
@@ -2153,7 +2244,7 @@ function tapTasbih(d) {
 }
 
 /* ---------- الصيام ---------- */
-var FLAB = { mon: 'صيام يوم الاثنين', thu: 'صيام يوم الخميس', white: 'من الأيام البيض', ashura: 'صيام عاشوراء', arafa: 'صيام يوم عرفة', shawwal: 'من أيام ست شوال' };
+var FLAB = { mon: 'صيام يوم الاثنين', thu: 'صيام يوم الخميس', white: 'صيام الأيام البيض', ashura: 'صيام عاشوراء', arafa: 'صيام يوم عرفة', shawwal: 'صيام ست من شوال' };
 var FDAY = 86400000;
 var FADL = {
   mon: 'قال ﷺ: «تُعرَض الأعمال يوم الاثنين والخميس، فأحبّ أن يُعرَض عملي وأنا صائم». رواه الترمذي (٧٤٧)',
@@ -2193,22 +2284,26 @@ function fastPair(tt) {
   if (FC.sig !== sig) { var n = Date.now(); FC = { sig: sig, a: fastInfo(n, tt.tz), b: fastInfo(n + FDAY, tt.tz) }; }
   return FC;
 }
+function fastShare(kind, when) {   // مشاركة «غدًا صيام …» مع فضله
+  var txt = (when === 'a' ? 'اليوم ' : 'غدًا ') + FLAB[kind] + '\n\n' + fadlOf(kind) + '\n\n— تطبيق روح المسلم\n' + location.origin + location.pathname;
+  if (navigator.share) { navigator.share({ text: txt }).catch(function () {}); return; }
+  try { navigator.clipboard.writeText(txt).then(function () { toast('تم النسخ', 'الصق الرسالة وأرسلها لمن تحب.', 'local'); }); } catch (e) { prompt('انسخ الرسالة:', txt); }
+}
 function viewFast() {
   var tt = todayTimes(), tz = tt.tz, now = Date.now(), f = S.set.fast, dk = today(), fp = fastPair(tt), a = fp.a, b = fp.b, logged = !!S.fasts[dk];
   var st = !a ? '' : a.kind === 'ramadan' ? 'رمضان: صيام اليوم فرض.' : a.kind === 'haram' ? 'يوم لا يُصام: عيد أو أيام التشريق.' : a.kind ? FLAB[a.kind] : 'اليوم ليس من أيام صيام السنّة.';
   var cnt = 0; for (var i = 0; i < 30; i++) if (S.fasts[RL.ymdKey(now - i * FDAY, tz)]) cnt++;
   var h = '<div class="stack"><div class="card stack"><div class="label">اليوم</div><div class="bigline">' + esc(st) + '</div>';
-  if (a && (FLAB[a.kind] || a.kind === 'ramadan')) h += '<p class="dua sm" lang="ar">' + esc(fadlOf(a.kind)) + '</p>';
-  if (b && FLAB[b.kind]) h += '<p class="meta">غدًا: ' + FLAB[b.kind] + '</p><p class="meta" style="line-height:1.8">فضله: ' + esc(fadlOf(b.kind)) + '</p>';
+  if (a && (FLAB[a.kind] || a.kind === 'ramadan')) h += '<p class="dua sm" lang="ar">' + esc(fadlOf(a.kind)) + '</p>' + (FLAB[a.kind] ? '<button class="btn" data-act="fastshare" data-k="' + a.kind + '" data-w="a" type="button">مشاركة: اليوم ' + FLAB[a.kind] + '</button>' : '');
+  if (b && FLAB[b.kind]) h += '<p class="meta">غدًا: ' + FLAB[b.kind] + '</p><p class="meta" style="line-height:1.8">فضله: ' + esc(fadlOf(b.kind)) + '</p><button class="btn" data-act="fastshare" data-k="' + b.kind + '" data-w="b" type="button">مشاركة: غدًا ' + FLAB[b.kind] + '</button>';
   h += '<button class="btn ' + (logged ? '' : 'primary') + '" data-act="fastlog">' + (logged ? svg('check', 'ck') + 'سُجّل صيامي اليوم' : 'سجّل أني صمت اليوم') + '</button><p class="meta">أيام الصيام المسجّلة في آخر ٣٠ يومًا: ' + ar(cnt) + '</p></div>';
   var up = [], dfm = null;
   try { dfm = new Intl.DateTimeFormat('ar-u-ca-gregory-nu-arab', { weekday: 'long', day: 'numeric', month: 'long', timeZone: tz }); } catch (e) {}
   for (var d = 1; d <= 160 && up.length < 7; d++) {
     var ms = now + d * FDAY, fi = fastInfo(ms, tz);
-    if (fi && FLAB[fi.kind]) up.push('<div class="frow"><div class="fh"><span>' + FLAB[fi.kind] + '<br><span class="meta">' + esc(hijriStr(ms, tz)) + '</span></span><span class="meta">' + esc(dfm ? dfm.format(new Date(ms)) : '') + '</span></div><p class="meta" style="line-height:1.9;margin:4px 0 12px">فضله: ' + esc(fadlOf(fi.kind)) + '</p></div>');
+    if (fi && FLAB[fi.kind]) up.push('<div class="trow"><span>' + FLAB[fi.kind] + '<br><span class="meta">' + esc(hijriStr(ms, tz)) + '</span></span><span class="meta">' + esc(dfm ? dfm.format(new Date(ms)) : '') + '</span></div>');
   }
   h += '<div class="card"><b>الأيام القادمة</b><div class="times">' + up.join('') + '</div></div>';
-  h += '<div class="card stack"><b>فضل الصيام</b>' + [['الاثنين والخميس', 'mon'], ['الأيام البيض (١٣ و١٤ و١٥ من كل شهر هجري)', 'white'], ['يوم عرفة', 'arafa'], ['عاشوراء', 'ashura'], ['ست من شوال', 'shawwal'], ['شهر رمضان', 'ramadan'], ['صيام التطوع عمومًا', 'any']].map(function (x) { return '<div><b>' + x[0] + '</b><p class="meta" style="line-height:1.9">' + esc(FADL[x[1]]) + '</p></div>'; }).join('') + '</div>';
   h += '<div class="card stack"><b>التذكير</b>' + sw('الاثنين', 'fast.mon', f.mon) + sw('الخميس', 'fast.thu', f.thu) + sw('الأيام البيض (١٣ و١٤ و١٥)', 'fast.white', f.white) + sw('عاشوراء وعرفة وست شوال', 'fast.extra', f.extra) +
     sw('تذكير في الليلة السابقة', 'fast.eve', f.eve) + sw('تذكير بالسحور', 'fast.sahurOn', f.sahurOn) + num('قبل الفجر بكم دقيقة', 'fast.sahur', f.sahur, 5, 240) +
     '<label class="fld">تعديل التاريخ الهجري<select data-path="fast.adj" data-num="1"><option value="-1"' + (f.adj === -1 ? ' selected' : '') + '>يوم أقل</option><option value="0"' + (f.adj === 0 ? ' selected' : '') + '>كما في التقويم (أم القرى)</option><option value="1"' + (f.adj === 1 ? ' selected' : '') + '>يوم أكثر</option></select></label>' +
@@ -2315,7 +2410,7 @@ function viewHome() {
   var tt = todayTimes(), t = tt.t, now = Date.now(), nx = nextPrayer(tt), cur = currentKey(tt), fri = isFriday(tt), tz = tt.tz;
   var h = '<div class="stack"><div class="hero"><div class="hijri">' + esc(hijriStr(now, tz)) + '</div><div class="greg">' + esc(gregStr(now, tz)) + '</div>' + ORN + '</div>';
   var fq = fastPair(tt), fnote = fq.a && FLAB[fq.a.kind] ? 'اليوم ' + FLAB[fq.a.kind] : fq.b && FLAB[fq.b.kind] ? 'غدًا ' + FLAB[fq.b.kind] : '', fk = fq.a && FLAB[fq.a.kind] ? fq.a.kind : fq.b && FLAB[fq.b.kind] ? fq.b.kind : '';
-  if (fnote) h += '<a class="card fastcard" href="#fast"><div class="label">الصيام</div><b>' + fnote + '</b><p class="meta" style="margin-top:6px;line-height:1.8">' + esc(fadlOf(fk)) + '</p></a>';
+  if (fnote) h += '<div class="card fastcard stack"><a href="#fast" style="color:inherit;text-decoration:none"><div class="label">الصيام</div><b>' + fnote + '</b><p class="meta" style="margin-top:6px;line-height:1.8">' + esc(fadlOf(fk)) + '</p></a><button class="btn" data-act="fastshare" data-k="' + fk + '" data-w="' + (fq.a && FLAB[fq.a.kind] ? 'a' : 'b') + '" type="button">مشاركة</button></div>';
   if (fri) h += '<div class="card" style="background:var(--accent-soft)"><b>يوم الجمعة</b><p class="meta" style="margin-top:4px">اغتسل وبكّر إلى المسجد، واقرأ سورة الكهف، وأكثر من الصلاة على النبي ﷺ، وتحرَّ ساعة الإجابة.</p></div>';
   h += '<div class="card next"><div class="label">الصلاة القادمة</div><div class="pname">' + (nx.k === 'dhuhr' && fri ? 'الجمعة' : PNAME[nx.k]) + '</div><div class="tnum">' + RL.fmtTime(nx.at, tz) + (nx.tomorrow ? ' غدًا' : '') + '</div><div class="cd" id="cd" data-k="' + nx.k + (nx.tomorrow ? 't' : '') + '">' + RL.fmtDur(nx.at - now) + '</div></div>';
   h += '<div class="card times">' + PR.map(function (k) { return '<div class="trow' + (k === cur ? ' now' : '') + '" data-k="' + k + '"><span>' + (k === 'dhuhr' && fri ? 'الجمعة' : PNAME[k]) + '</span><span class="tm">' + RL.fmtTime(t[k], tz) + '</span></div>'; }).join('') + '</div>';
@@ -2332,7 +2427,7 @@ function viewHome() {
   return { title: 'روح', back: null, html: h };
 }
 function viewAdhkar() {
-  return { title: 'الأذكار', back: null, html: '<div class="grid2">' + tile('zk-morning', 'sun', 'أذكار الصباح') + tile('zk-evening', 'moon', 'أذكار المساء') + tile('zk-sleep', 'moon', 'أذكار النوم') + tile('zk-wake', 'sun', 'أذكار الاستيقاظ') + tile('zk-salah', 'mosque', 'أذكار بعد الصلاة') + tile('inprayer', 'mosque2', 'أذكار في الصلاة') + tile('hisn', 'scroll', 'حصن المسلم', 'كل الأبواب') +
+  return { title: 'الأذكار', back: null, html: '<div class="grid2">' + tile('zk-morning', 'sun', 'أذكار الصباح') + tile('zk-evening', 'moon', 'أذكار المساء') + tile('zk-sleep', 'moon', 'أذكار النوم') + tile('zk-wake', 'sun', 'أذكار الاستيقاظ') + tile('zk-salah', 'check', 'أذكار بعد الصلاة') + tile('inprayer', 'book', 'أذكار في الصلاة') + tile('hisn', 'scroll', 'حصن المسلم', 'كل الأبواب') +
     tile('sunan', 'scroll', 'السنن اليومية', 'المنزل، الخلاء، المسجد…') + tile('duas', 'dua', 'الأدعية', 'من الكتاب والسنة') + tile('ruqya', 'shield', 'الرقية والتحصين') + tile('hadith', 'book', 'الأحاديث', 'من الصحيحين') + '</div>' };
 }
 function viewZk(arg) {
@@ -2419,10 +2514,6 @@ function viewMore() {
 
 /* ---------- التذكيرات والإعدادات ---------- */
 function sw(label, path, val) { return '<label class="switch"><span>' + label + '</span><input type="checkbox" data-path="' + path + '"' + (val ? ' checked' : '') + '></label>'; }
-function evSel(label, path, val) {
-  var o = [15, 30, 45, 60, 90, 120, 180, 240]; if (o.indexOf(val) < 0) { o.push(val); o.sort(function (x, y) { return x - y; }); }
-  return '<label class="fld">' + label + '<select data-path="' + path + '" data-num="1">' + o.map(function (m) { return '<option value="' + m + '"' + (m === val ? ' selected' : '') + '>' + (m === 60 ? 'كل ساعة' : m === 120 ? 'كل ساعتين' : m > 60 && m % 60 === 0 ? 'كل ' + ar(m / 60) + ' ساعات' : 'كل ' + ar(m) + ' دقيقة') + '</option>'; }).join('') + '</select></label>';
-}
 function num(label, path, val, min, max) { return '<label class="fld">' + label + '<input type="number" inputmode="numeric" data-path="' + path + '" data-num="1" step="any" min="' + min + '" max="' + max + '" value="' + val + '"></label>'; }
 function notifState() { if (!('Notification' in window)) return 'هذا المتصفح لا يدعم إشعارات الهاتف.'; var p = Notification.permission; return p === 'granted' ? 'الحالة: مفعّلة، وستصلك التذكيرات في شريط إشعارات الهاتف.' : p === 'denied' ? 'الحالة: محظورة. فعّلها من إعدادات الموقع في المتصفح (القفل بجانب العنوان ثم الأذونات).' : 'الحالة: غير مفعّلة. اضغط «تفعيل» ثم اختر «السماح».'; }
 function viewRemind() {
@@ -2430,16 +2521,15 @@ function viewRemind() {
   h += '<div class="card"><b>تنبيه الصلوات</b>' + PR.map(function (k) { return sw(PNAME[k], 'alerts.' + k, s.alerts[k]); }).join('') + '</div>';
   h += '<div class="card stack">' + sw('تذكير قبل الفجر', 'fajrEarly.on', s.fajrEarly.on) + num('قبل الفجر بكم دقيقة', 'fajrEarly.min', s.fajrEarly.min, 5, 180) + '</div>';
   h += '<div class="card stack">' + sw('تذكير الجمعة (الغسل والكهف والصلاة على النبي)', 'jumuah.on', s.jumuah.on) + num('قبل صلاة الجمعة بكم دقيقة', 'jumuah.min', s.jumuah.min, 10, 300) + '</div>';
-  h += '<div class="card stack">' + sw('تذكير بالصلاة على النبي ﷺ', 'salawat.on', s.salawat.on) + evSel('تكرار الصلاة على النبي', 'salawat.min', s.salawat.min) + '</div>';
-  h += '<div class="card stack">' + sw('تذكير بذكر الله', 'dhikr.on', s.dhikr.on) + evSel('تكرار الذكر', 'dhikr.min', s.dhikr.min) + '</div>';
-  h += '<div class="card"><a class="btn" href="#quran">إعداد الورد اليومي من القرآن</a></div>';
+  h += '<div class="card stack">' + sw('تذكير بالصلاة على النبي ﷺ', 'salawat.on', s.salawat.on) + num('كل كم دقيقة', 'salawat.min', s.salawat.min, 5, 720) + '</div>';
+  h += '<div class="card stack">' + sw('تذكير بذكر الله', 'dhikr.on', s.dhikr.on) + num('كل كم دقيقة', 'dhikr.min', s.dhikr.min, 5, 720) + '</div>';
   h += '<div class="card">' + sw('تذكير بأذكار الصباح', 'mAdhkar', s.mAdhkar) + sw('تذكير بأذكار المساء', 'eAdhkar', s.eAdhkar) + sw('صوت التنبيه', 'sound', s.sound) + '</div>';
   h += '<div class="card stack"><b>صوت الأذان</b><p class="meta">الصوت الافتراضي نغمة هادئة.</p><div class="row"><button class="btn" data-act="testalert">جرّب الصوت</button></div></div>';
   h = h.replace('</p>', '</p><div class="card stack"><b>إشعارات الهاتف</b><p class="meta">' + notifState() + '</p><div class="row"><button class="btn" data-act="notif">تفعيل إشعارات الهاتف</button><button class="btn ghost" data-act="testnotif">جرّب إشعارًا</button></div></div>') + '</div>';
   return { title: 'التذكيرات', back: 'more', html: h };
 }
 function viewPrefs() {
-  var s = S.set, h = '<div class="stack"><div class="card stack"><b>مكان حساب المواقيت</b><label class="fld">المدينة<select id="city">' + CITIES.map(function (c) { return '<option value="' + c[0] + '"' + (s.city === c[0] ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('') + '<option value="custom"' + (s.city === 'custom' ? ' selected' : '') + '>إحداثيات مخصصة</option></select></label>';
+  var s = S.set, h = '<div class="stack"><div class="card stack"><b>مكان حساب المواقيت</b><button class="btn primary" data-act="geoloc" type="button">📍 تحديد موقعي تلقائيًا</button><p class="meta" id="geomsg">' + (s.city === 'custom' && s.place ? 'الموقع الحالي: ' + esc(s.place) : 'أو اختر مدينتك:') + '</p><label class="fld">المدينة<select id="city">' + (function () { var g = '', o = ''; CITIES.forEach(function (c) { if (c[5] !== g) { if (g) o += '</optgroup>'; g = c[5]; o += '<optgroup label="' + g + '">'; } o += '<option value="' + c[0] + '"' + (s.city === c[0] ? ' selected' : '') + '>' + c[1] + '</option>'; }); return o + '</optgroup>'; })() + '<option value="custom"' + (s.city === 'custom' ? ' selected' : '') + '>' + (s.place ? esc(s.place) : 'إحداثيات مخصصة') + '</option></select></label>';
   if (s.city === 'custom') h += '<div class="grid2">' + num('خط العرض', 'lat', s.lat, -66, 66) + num('خط الطول', 'lng', s.lng, -180, 180) + '</div>';
   h += '<label class="fld">طريقة الحساب<select data-path="method">' + Object.keys(RL.METHODS).map(function (k) { return '<option value="' + k + '"' + (s.method === k ? ' selected' : '') + '>' + RL.METHODS[k].name + '</option>'; }).join('') + '</select></label>' +
     '<label class="fld">وقت العصر<select data-path="asr" data-num="1"><option value="1"' + (+s.asr === 1 ? ' selected' : '') + '>الجمهور (ظل المثل)</option><option value="2"' + (+s.asr === 2 ? ' selected' : '') + '>الحنفية (ظل المثلين)</option></select></label>' +
@@ -2501,6 +2591,18 @@ document.addEventListener('click', function (e) {
   unlockAudio();
   if (a === 'splash') { $('#splash').hidden = true; return; }
   if (a === 'themecycle') { S.set.theme = S.set.theme === 'dark' ? 'light' : 'dark'; applyTheme(); save(); render(true); return; }
+  if (a === 'fastshare') { fastShare(d.k, d.w); return; }
+  if (a === 'geoloc') {
+    var gm = $('#geomsg'); if (gm) gm.textContent = 'جارٍ تحديد موقعك…';
+    if (!navigator.geolocation) { if (gm) gm.textContent = 'متصفحك لا يدعم تحديد الموقع.'; return; }
+    navigator.geolocation.getCurrentPosition(function (p) {
+      var la = +p.coords.latitude.toFixed(4), ln = +p.coords.longitude.toFixed(4), tz = devTz();
+      S.set.city = 'custom'; S.set.lat = la; S.set.lng = ln; S.set.tz = tz; S.set.method = methodFor(tz); S.set.place = 'موقعك الحالي (' + la + '، ' + ln + ')';
+      save(); render(true); toast('تم تحديد موقعك', 'تُحسب المواقيت الآن حسب مكانك.', 'local');
+      try { fetch('https://nominatim.openstreetmap.org/reverse?format=json&accept-language=ar&zoom=10&lat=' + la + '&lon=' + ln).then(function (r) { return r.json(); }).then(function (j) { var ad = j.address || {}, nm = ad.city || ad.town || ad.village || ad.county || ad.state || ''; if (nm && S.set.city === 'custom' && S.set.lat === la) { S.set.place = nm + (ad.country ? '، ' + ad.country : ''); save(); render(true); } }).catch(function () {}); } catch (e) {}
+    }, function (er) { var m = $('#geomsg'); if (m) m.textContent = er && er.code === 1 ? 'لم تسمح بالوصول للموقع. فعّله من إعدادات المتصفح للموقع ثم أعد المحاولة.' : 'تعذّر تحديد الموقع، تأكد من تشغيل GPS وحاول مجددًا.'; }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
+    return;
+  }
   if (a === 'theme') { S.set.theme = d.v; applyTheme(); save(); render(true); return; }
   if (a === 'zc') {
     var day = today(), m = S.zc[day] || (S.zc[day] = {}), n = +d.n, c = m[d.key] || 0;
@@ -2531,10 +2633,6 @@ document.addEventListener('click', function (e) {
   if (a === 'qmretry') { QM.err = false; render(true); return; }
   if (a === 'qretry') { qImgShow(Q.pg); return; }
   if (a === 'qmark') { S.qmark = (S.qmark && S.qmark.s === +d.s && S.qmark.a === +d.a) ? null : (d.p ? { s: +d.s, a: +d.a, p: +d.p } : { s: +d.s, a: +d.a }); save(); render(true); return; }
-  if (a === 'wirddone') { var wl = wList(), wi = wDone(); if (wi >= wl.length) return; S.wird.next = ((S.wird.next - 1 + Math.max(1, +wl[wi].pages || 1)) % 604) + 1; S.wird.doneDay = today(); S.wird.done = wi + 1; save(); render(true); toast('تقبّل الله منك', wi + 1 >= wl.length ? 'أتممت وردك اليوم' : 'أتممت الورد ' + ar(wi + 1)); return; }
-  if (a === 'wirdundo') { var wl2 = wList(), wj = wDone() - 1; if (wj < 0) return; S.wird.next = ((((S.wird.next - 1 - Math.max(1, +wl2[wj].pages || 1)) % 604) + 604) % 604) + 1; S.wird.done = wj; if (!wj) S.wird.doneDay = ''; save(); render(true); return; }
-  if (a === 'wirdadd') { var wl3 = wList(); wl3.push({ pages: 2, time: '21:00', every: 0 }); save(); render(true); return; }
-  if (a === 'wirddel') { var wl4 = wList(), wd = +el.getAttribute('data-i'); if (wl4.length > 1 && wd >= 0 && wd < wl4.length) { if (wd < wDone()) S.wird.done = wDone() - 1; wl4.splice(wd, 1); save(); render(true); } return; }
   if (a === 'fastlog') { var fk = today(); if (S.fasts[fk]) delete S.fasts[fk]; else S.fasts[fk] = 1; save(); render(true); return; }
   if (a === 'tcat') { T.cat = d.v; render(true); return; }
   if (a === 'tpick') { T.id = d.id; render(true); return; }
@@ -2587,17 +2685,16 @@ document.addEventListener('change', function (e) {
   var el = e.target;
   if (el.id === 'city') {
     S.set.city = el.value; var c = CITIES.filter(function (x) { return x[0] === el.value; })[0];
-    if (c) { S.set.lat = c[2]; S.set.lng = c[3]; S.set.tz = c[4]; } else S.set.tz = devTz();
+    if (c) { S.set.lat = c[2]; S.set.lng = c[3]; S.set.tz = c[4]; S.set.method = methodFor(c[4]); S.set.place = ''; } else S.set.tz = devTz();
     save(); render(true); return;
   }
-  if (el.id === 'wstart') { var ws = parseInt(el.value, 10); if (ws >= 1 && ws <= 604) { S.wird.next = ws; save(); render(true); } return; }
   var path = el.getAttribute('data-path'); if (!path) return;
   var v = el.type === 'checkbox' ? (el.checked ? 1 : 0) : el.getAttribute('data-num') ? +el.value : el.value;
   if (el.type === 'number' && (isNaN(v) || el.value === '')) return;
   if (path === 'sound' || path === 'mAdhkar' || path === 'eAdhkar') v = !!v ? (path === 'sound' ? true : 1) : (path === 'sound' ? false : 0);
-  if (path === 'lat' || path === 'lng') S.set.city = 'custom';
+  if (path === 'lat' || path === 'lng') { S.set.city = 'custom'; S.set.place = ''; }
   setPath(path, v); save();
-  if (path === 'method' || path === 'asr' || path === 'lat' || path === 'lng' || path.indexOf('wird') === 0) render(true);
+  if (path === 'method' || path === 'asr' || path === 'lat' || path === 'lng') render(true);
 });
 
 /* ---------- البداية ---------- */
