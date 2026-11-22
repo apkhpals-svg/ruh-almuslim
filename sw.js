@@ -1,6 +1,6 @@
 /* روح المسلم - Service Worker
    غيّر VERSION مع كل تعديل (شغّل: python3 bump_version.py) فيتحدّث التطبيق المثبّت تلقائيًا. */
-const VERSION = 'v-8a21c6f0';
+const VERSION = 'v-76861453';
 const SHELL = 'ruh-shell-' + VERSION;   // يتغيّر مع كل إصدار ويُحذف القديم
 const GF = 'ruh-gfonts-v1';             // خطوط Google (ثابت)
 const QC = 'ruh-quran-v1';              // صفحات وخطوط المصحف (ثابت، حجمه كبير فلا يُعاد تحميله مع كل تحديث)
@@ -31,7 +31,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => e.waitUntil((async () => {
   for (const k of await caches.keys()) if (k.startsWith('ruh-shell-') && k !== SHELL) await caches.delete(k);
-  await caches.delete('ruh-qimg-v1');                   // صور المصدر القديم
+  await caches.delete('ruh-qimg-v1'); await caches.delete('ruh-qimg-v2');   // النسخ الكبيرة القديمة: التطبيق صار يحفظ نسخًا مصغّرة بنفسه فتتحرّر المساحة                   // صور المصدر القديم
   await self.clients.claim();                           // السيطرة على الصفحات المفتوحة فورًا
 })()));
 
@@ -58,12 +58,8 @@ async function quran(r, p) {                            // الكاش أولًا
   if (res.ok) c.put(k, res.clone());
   return res;
 }
-async function qimg(r, f) {                             // صورة الصفحة: الكاش أولًا، ثم الشبكة وتُحفظ (CORS فقط حتى لا يتضخم الكاش)
-  const c = await caches.open(IC), k = new Request(self.location.origin + '/__qi/' + f), h = await c.match(k);
-  if (h) return h;
-  const res = await fetch(r);
-  if (res.ok && res.type !== 'opaque') c.put(k, res.clone());
-  return res;
+async function qimg(r, f) {                             // الصور الأصلية كبيرة (~١ ميغابايت): تمرّ مباشرة للشبكة ولا تُخزَّن هنا، فالتطبيق يحفظ نسخة مصغّرة بنفسه
+  return fetch(r);
 }
 async function swr(r, name) {                           // من الكاش فورًا ثم تحديثه من الشبكة
   const c = await caches.open(name), h = await c.match(r, { ignoreSearch: name === SHELL });
