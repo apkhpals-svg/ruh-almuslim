@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+  <script src="https://onesignal.com" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "86b30ae6-9d69-4f45-8bbb-bff81a1abeae",
+      serviceWorkerPath: "/ruh-almuslim/OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/ruh-almuslim/" }
+    });
+  });
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>روح المسلم</title>
