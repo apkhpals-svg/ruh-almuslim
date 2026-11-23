@@ -3,6 +3,9 @@
 - أيقونة التطبيق (عادية ودائرية وأمامية للأيقونة التكيّفية)
 - أيقونة شريط الإشعارات ic_stat_icon (هلال ونجمة بيضاء على خلفية شفافة)
 - صلاحيات الإشعارات والتنبيه الدقيق والموقع
+- رقم الإصدار: versionCode = GITHUB_RUN_NUMBER و versionName = 1.0.<GITHUB_RUN_NUMBER>
+- التوقيع بمفتاح ثابت (KS_PATH / KS_PASS / KS_ALIAS) كي يتحدّث التطبيق فوق القديم بدون حذف بياناته
+- حقن رقم البناء داخل index.html ليعرف التطبيق نسخته عند فحص التحديثات
 """
 import os, re, sys
 from PIL import Image, ImageDraw
@@ -103,3 +106,41 @@ if add:
     m = re.sub(r'(\s*<application)', '\n' + add.rstrip('\n') + r'\n\1', m, count=1)
 open(MANIFEST, 'w', encoding='utf-8').write(m)
 print('prepared icons, notification icon and permissions')
+
+# ---------- رقم الإصدار ----------
+run = os.environ.get('GITHUB_RUN_NUMBER', '1')
+if not run.isdigit():
+    run = '1'
+GRADLE = 'android/app/build.gradle'
+g = open(GRADLE, encoding='utf-8').read()
+g, n1 = re.subn(r'versionCode\s+\d+', 'versionCode ' + run, g, count=1)
+g, n2 = re.subn(r'versionName\s+"[^"]*"', 'versionName "1.0.' + run + '"', g, count=1)
+if not (n1 and n2):
+    sys.exit('versionCode/versionName not found in build.gradle')
+
+# ---------- التوقيع بمفتاح ثابت ----------
+if os.environ.get('KS_PATH') and 'signingConfigs {' not in g:
+    signing = (
+        '    signingConfigs {\n'
+        '        release {\n'
+        '            storeFile file(System.getenv("KS_PATH"))\n'
+        '            storePassword System.getenv("KS_PASS")\n'
+        '            keyAlias System.getenv("KS_ALIAS")\n'
+        '            keyPassword System.getenv("KS_PASS")\n'
+        '        }\n'
+        '    }\n'
+    )
+    g, n3 = re.subn(r'(\n\s*buildTypes\s*\{)', '\n' + signing + r'\1', g, count=1)
+    g, n4 = re.subn(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', g, count=1)
+    if not (n3 and n4):
+        sys.exit('could not patch signing config into build.gradle')
+open(GRADLE, 'w', encoding='utf-8').write(g)
+print('versionCode', run, 'versionName 1.0.' + run)
+
+# ---------- رقم البناء داخل التطبيق ----------
+for page in ('www/index.html',):
+    if os.path.exists(page):
+        t = open(page, encoding='utf-8').read()
+        if 'var APP_BUILD = 0;' in t:
+            open(page, 'w', encoding='utf-8').write(t.replace('var APP_BUILD = 0;', 'var APP_BUILD = ' + run + ';', 1))
+            print('APP_BUILD =', run)
