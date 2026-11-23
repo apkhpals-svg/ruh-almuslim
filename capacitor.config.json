@@ -1,0 +1,18 @@
+{
+  "appId": "com.ruhalmuslim.app",
+  "appName": "روح المسلم",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0B0D10",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#D4AF37"
+    }
+  }
+}
