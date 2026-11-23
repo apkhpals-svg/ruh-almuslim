@@ -57,14 +57,14 @@ jobs:
       - name: Sync
         run: npx cap sync android
 
-      - name: Build debug APK
+      - name: Build and Sign APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-
-      - name: Collect APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk ruh-almuslim.apk
+          ./gradlew assembleRelease --no-daemon
+          keytool -genkey -v -keystore release.keystore -alias ruh -keyalg RSA -keysize 2048 -validity 10000 -storepass 123456 -keypass 123456 -dname "CN=RuhAlmuslim, OU=App, O=Islamic, L=City, S=State, C=IQ"
+          $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | tail -n 1)/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app-aligned.apk
+          $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | tail -n 1)/apksigner sign --ks release.keystore --ks-pass pass:123456 --key-pass pass:123456 --out ../ruh-almuslim.apk app-aligned.apk
 
       - uses: actions/upload-artifact@v4
         with:
