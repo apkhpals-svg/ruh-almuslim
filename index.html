@@ -422,6 +422,17 @@ nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent
 .dua.qd, .qdua .dua, .qv, .qtext, .basmala { font-family: var(--quran-font); font-weight: 400; }
 .qv { font-size: 1.12em; }
 .dua.sm .qv { font-size: 1.3em; line-height: 2.1; }
+/* نافذة التحديث (تطبيق الأندرويد) */
+.updov { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); direction: rtl; animation: updin .25s ease; }
+@keyframes updin { from { opacity: 0 } to { opacity: 1 } }
+.updbox { width: min(92vw, 380px); background: linear-gradient(160deg, #15110a 0%, #0B0D10 60%); border: 1.5px solid #D4AF37; border-radius: 26px; padding: 28px 24px 22px; text-align: center; color: #F2EBDD; box-shadow: 0 20px 60px rgba(0,0,0,.65), 0 0 0 6px rgba(212,175,55,.12); font-family: var(--f-ui, "Cairo", system-ui, sans-serif); }
+.updbox .ico { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #0B0D10; background: linear-gradient(135deg, #F1D77A, #D4AF37); }
+.updbox h3 { margin: 0 0 10px; font-size: 22px; color: #E8C75A; font-weight: 800; }
+.updbox p { margin: 0 0 22px; font-size: 17px; line-height: 1.9; color: #E9E2D2; }
+.updbox .row2 { display: flex; gap: 12px; }
+.updbox button { flex: 1; font: inherit; font-size: 17px; font-weight: 700; padding: 13px 10px; border-radius: 14px; cursor: pointer; border: 1.5px solid #4a4332; background: transparent; color: #E9E2D2; }
+.updbox button.go { background: linear-gradient(135deg, #F1D77A, #D4AF37); color: #1a1405; border-color: #D4AF37; flex: 1.4; }
+
 .qv .ano { font-size: 1.05em; }
 /* علامة نهاية الآية: الرقم داخل الدائرة بخط المصحف نفسه */
 .ano, button.ano { display: inline-block; width: auto; height: auto; line-height: inherit; padding: 0 .06em; margin: 0 .08em; border: 0; border-radius: 50%; background: none !important; color: var(--accent); font-family: "KFGQPC Uthmanic Script HAFS"; font-size: 1.3em; font-weight: 400; vertical-align: baseline; top: 0; direction: rtl; unicode-bidi: isolate; }
@@ -1593,6 +1604,41 @@ function natSched(force) {
       });
   }).catch(function () { NATL.sig = ''; });
 }
+
+
+/* ---------- تنبيه التحديث (تطبيق الأندرويد فقط، ويعمل عند توفر الإنترنت) ---------- */
+var APP_BUILD = 0;   /* يضع GitHub Actions رقم البناء هنا؛ ويبقى 0 في المتصفح فلا يظهر التنبيه */
+var UPD_API = 'https://api.github.com/repos/apkhpals-svg/ruh-almuslim/releases/latest';
+function updShow(build, url) {
+  if (document.getElementById('updov')) return;
+  var o = document.createElement('div'); o.className = 'updov'; o.id = 'updov'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+  o.innerHTML = '<div class="updbox"><div class="ico">✦</div><h3>تحديث جديد</h3><p>يتوفر تحديث جديد لتطبيق روح المسلم بمميزات وإضافات جديدة</p><div class="row2"><button class="go" type="button" id="updgo">تحديث الآن</button><button type="button" id="updlater">لاحقاً</button></div></div>';
+  document.body.appendChild(o);
+  function close() { o.remove(); }
+  document.getElementById('updlater').onclick = function () { try { localStorage.setItem('ruh-updskip', JSON.stringify([build, Date.now()])); } catch (e) {} close(); };
+  document.getElementById('updgo').onclick = function () { close(); try { window.open(url, '_blank'); } catch (e) { location.href = url; } };
+}
+function updCheck(force) {
+  try {
+    if (!NAT || !APP_BUILD || !navigator.onLine || !window.fetch) return;
+    var last = +localStorage.getItem('ruh-updchk') || 0;
+    if (!force && Date.now() - last < 6 * 3600000) return;
+    localStorage.setItem('ruh-updchk', String(Date.now()));
+    var ac = window.AbortController ? new AbortController() : null, tm = ac && setTimeout(function () { ac.abort(); }, 10000);
+    fetch(UPD_API, { headers: { Accept: 'application/vnd.github+json' }, signal: ac ? ac.signal : undefined }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      clearTimeout(tm);
+      if (!j) return;
+      var m = /(\d+)\s*$/.exec(String(j.tag_name || '')), latest = m ? +m[1] : 0;
+      if (!(latest > APP_BUILD)) return;
+      var sk = null; try { sk = JSON.parse(localStorage.getItem('ruh-updskip')); } catch (e) {}
+      if (sk && sk[0] === latest && Date.now() - sk[1] < 24 * 3600000) return;   // «لاحقاً»: لا نزعجه قبل ٢٤ ساعة
+      var a = (j.assets || []).filter(function (x) { return /\.apk$/i.test(x.name || ''); })[0];
+      updShow(latest, a && a.browser_download_url ? a.browser_download_url : (j.html_url || 'https://github.com/apkhpals-svg/ruh-almuslim/releases/latest'));
+    }).catch(function () { clearTimeout(tm); });
+  } catch (e) {}
+}
+setTimeout(function () { updCheck(false); }, 6000);
+document.addEventListener('visibilitychange', function () { if (!document.hidden) updCheck(false); });
 
 /* ---------- جدول التذكيرات للخلفية (يصل الإشعار والتطبيق مغلق) ---------- */
 /* الصفحة تحسب أحداث الأيام القادمة وتسلّمها إلى الـ Service Worker الذي يعرضها حين يوقظه النظام (مزامنة الخلفية) أو يصله push. */
