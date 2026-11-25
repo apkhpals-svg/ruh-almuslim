@@ -1,6 +1,6 @@
 /* روح المسلم - Service Worker
    غيّر VERSION مع كل تعديل (شغّل: python3 bump_version.py) فيتحدّث التطبيق المثبّت تلقائيًا. */
-const VERSION = 'v-16fd6078';
+const VERSION = 'v-57c12e81';
 const SHELL = 'ruh-shell-' + VERSION;   // يتغيّر مع كل إصدار ويُحذف القديم
 const GF = 'ruh-gfonts-v1';             // خطوط Google (ثابت)
 const QC = 'ruh-quran-v1';              // صفحات وخطوط المصحف (ثابت، حجمه كبير فلا يُعاد تحميله مع كل تحديث)

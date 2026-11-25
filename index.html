@@ -1704,6 +1704,9 @@ if (NAT) {
 }
 function natSched(force) {
   if (!NAT) return;
+  try { natSched0(force); } catch (e) { NATL.sig = ''; }
+}
+function natSched0(force) {
   var sig = JSON.stringify([S.set.alerts, S.set.fast, S.set.salawat, S.set.dhikr, S.set.fajrEarly, S.set.jumuah, S.set.mAdhkar, S.set.eAdhkar, S.set.adk, S.set.kahf, S.set.wird, S.set.city, S.set.method, S.set.asr, S.set.lat, S.set.lng, Math.floor(Date.now() / 21600000)]);
   if (sig === NATL.sig && (!force || Date.now() - NATL.t < 60000)) return;
   NATL.t = Date.now();
@@ -1715,16 +1718,16 @@ function natSched(force) {
       .then(function () { return NAT.getPending(); })
       .then(function (pd) {
         var now = Date.now(), seen = {}, items = [];
-        buildSched(14, 96, 440).forEach(function (ev) {
+        buildSched(21, 30, 250).forEach(function (ev) {
           if (ev.at <= now + 5000) return;
           var id = natId(ev.id + '@' + ev.at); if (seen[id]) return; seen[id] = 1;
           items.push({ id: id, title: ev.title, body: ev.body, largeBody: ev.body, schedule: { at: new Date(ev.at), allowWhileIdle: true }, channelId: 'ruh', smallIcon: 'ic_stat_icon', iconColor: '#D4AF37', extra: { kind: ev.kind } });
         });
-        items = items.slice(0, 480);
+        items = items.slice(0, 250);   // أقل بكثير من حد ٥٠٠ منبّه في أندرويد
         var keep = {}; items.forEach(function (x) { keep[x.id] = 1; });
         var stale = ((pd && pd.notifications) || []).filter(function (x) { return !keep[x.id]; }).map(function (x) { return { id: x.id }; });
         // نلغي القديم فقط ثم نجدول؛ فلا يبقى الجدول فارغًا لحظة إن أُغلق التطبيق في المنتصف
-        return (stale.length ? NAT.cancel({ notifications: stale }) : Promise.resolve()).then(function () { return items.length ? NAT.schedule({ notifications: items }) : null; });
+        return (stale.length ? NAT.cancel({ notifications: stale }) : Promise.resolve()).then(function () { var ch = Promise.resolve(); for (var q = 0; q < items.length; q += 40) (function (part) { ch = ch.then(function () { return NAT.schedule({ notifications: part }); }); })(items.slice(q, q + 40)); return ch; });
       })
       .then(function () {
         try { if (NAT.checkExactNotificationSetting && !localStorage.getItem('ruh-exact')) NAT.checkExactNotificationSetting().then(function (r) { if (r && r.exact_alarm === 'denied') { localStorage.setItem('ruh-exact', '1'); toast('لدقة المواعيد', 'اسمح لـ«روح المسلم» بالمنبّهات والتذكيرات من الإعدادات التي ستفتح الآن.'); if (NAT.changeExactNotificationSetting) NAT.changeExactNotificationSetting(); } }).catch(function () {}); } catch (e) {}
@@ -1778,14 +1781,15 @@ function buildSched(DAYS, HRS, CAP) {   // الافتراضي ٣ أيام للـ
     tt = { p: p, tz: tz, key: RL.ymdKey(now + d * FDAY, tz), t: RL.prayerTimes(p.y, p.m, p.d, +s.lat, +s.lng, s.method, +s.asr) };
     dayEvents(tt, noon).forEach(function (ev) { if (ev.at > now - 3600000) out.push({ id: 'd' + tt.key + '-' + ev.key, at: ev.at, title: ev.title, body: ev.body, kind: ev.kind || 'n' }); });
   }
+  out.sort(function (a, b) { return a.at - b.at; }); var REM = Math.min(40, CAP >> 2); if (out.length > CAP - REM) out.length = CAP - REM;   // الأساسيات أولًا ثم التذكيرات العامة
   function nearFixed(at) { return out.some(function (x) { return Math.abs(x.at - at) < 6 * 60000; }); }   // لا حدثان متقاربان (صلاة/ذكر/صلاة على النبي)
   function quiet(at) { var q = RL.partsIn(at, tz), m = q.h * 60 + q.mi; return m >= 1410 || m < 240; }   // لا تذكير عام بين ١١:٣٠ ليلًا و٤ فجرًا
   var end = now + HRS * 3600000;
   [['salawat', 'صلِّ على النبي ﷺ', 0, function () { return pickRand(SAL); }], ['dhikr', 'اذكر الله', 15, function () { return pickRand(DHK.concat(RC.quotes)); }]].forEach(function (g) {
     var c = s[g[0]]; if (!c || !c.on || !(c.min >= 5)) return;
-    var step = c.min * 60000, off = g[2] * 60000, at = Math.ceil((now - off) / step) * step + off;
+    var nRem = 0, step = c.min * 60000, off = g[2] * 60000, at = Math.ceil((now - off) / step) * step + off;
     if (at <= now + 20000) at += step;
-    for (; at < end && out.length < CAP + 20; at += step) if (!quiet(at) && !nearFixed(at)) out.push({ id: 'ruh-remind', at: at, title: g[1], body: g[3](), kind: 'n' });
+    for (; at < end && nRem < (REM >> 1); at += step) if (!quiet(at) && !nearFixed(at)) { nRem++; out.push({ id: 'ruh-remind', at: at, title: g[1], body: g[3](), kind: 'n' }); }
   });
   out.sort(function (a, b) { return a.at - b.at; });
   return out.slice(0, CAP);
@@ -1805,7 +1809,7 @@ function pushSched(force) {
     });
   } catch (e) {}
 }
-setTimeout(function () { pushSched(true); }, NAT ? 1200 : 3000);
+setTimeout(function () { try { pushSched(true); } catch (e) {} }, NAT ? 4000 : 3000);   // بعد اكتمال الواجهة، لا أثناء الإقلاع
 setInterval(function () { pushSched(false); }, 10 * 60 * 1000);
 document.addEventListener('visibilitychange', function () { pushSched(true); });
 
@@ -2526,7 +2530,7 @@ var FDAY = 86400000;
 var FADL = {
   mon: 'قال ﷺ: «تُعرَض الأعمال يوم الاثنين والخميس، فأحبّ أن يُعرَض عملي وأنا صائم». رواه الترمذي (٧٤٧)، وصححه الألباني',
   thu: 'قال ﷺ: «تُعرَض الأعمال يوم الاثنين والخميس، فأحبّ أن يُعرَض عملي وأنا صائم». رواه الترمذي (٧٤٧)، وصححه الألباني',
-  white: 'قال ﷺ لأبي ذر: «يا أبا ذر، إذا صُمتَ من الشهر ثلاثة أيام فصُم ثلاث عشرة وأربع عشرة وخمس عشرة». رواه الترمذي (٧٦١) والنسائي (٢٤٢٤)، وحسّنه الترمذي والألباني. وصيام ثلاثة أيام من كل شهر وصية النبي ﷺ لأبي هريرة، متفق عليه: البخاري (١٩٨١)، مسلم (٧٢١)',
+  white: 'قال ﷺ: «يا أبا ذر، إذا صُمتَ من الشهر ثلاثة أيام فصُم ثلاث عشرة وأربع عشرة وخمس عشرة». رواه الترمذي وحسّنه الألباني',
   arafa: 'قال ﷺ: «صيام يوم عرفة، أحتسب على الله أن يكفّر السنة التي قبله والسنة التي بعده». رواه مسلم (١١٦٢)',
   ashura: 'قال ﷺ: «صيام يوم عاشوراء، أحتسب على الله أن يكفّر السنة التي قبله». رواه مسلم (١١٦٢)',
   shawwal: 'قال ﷺ: «من صام رمضان ثم أتبعه ستًّا من شوال كان كصيام الدهر». رواه مسلم (١١٦٤)',
@@ -2544,6 +2548,7 @@ function flab(i) {   // نص الصيام؛ للأيام البيض يذكر ت�
 }
 IC.share = '<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/>';
 IC.mosque = '<path d="M2.5 21h19"/><path d="M5 21v-6.5h14V21"/><path d="M7.2 14.5a4.8 4.8 0 0 1 9.6 0"/><path d="M12 9.7V7"/><path d="M12 7c-.9 0-1.6-.7-1.6-1.5S11.1 4 12 4c-.4.4-.6.9-.6 1.5S11.6 6.6 12 7z"/><path d="M3.5 21V10l1-1.8 1 1.8v11"/><path d="M18.5 21V10l1-1.8 1 1.8v11"/><path d="M10 21v-3.2a2 2 0 0 1 4 0V21"/>';
+IC.mosque2 = '<path d="M2.5 21h19"/><path d="M4 21v-5.5h10V21"/><path d="M5.2 15.5C5.2 11.8 7.2 9.8 9 8.2c1.8 1.6 3.8 3.6 3.8 7.3"/><path d="M9 8.2V6.3"/><path d="M8.2 4.6a1.1 1.1 0 1 0 1.5.9"/><path d="M16.5 21V9.5"/><path d="M15.4 9.5h2.2l-1.1-2.3z"/><path d="M16.5 7.2V5.8"/><path d="M8 21v-2.6a1 1 0 0 1 2 0V21"/><path d="M14 16.5h2.5M16.5 12.5h2.2V21"/>';
 IC.wird = '<path d="M12 6.5C10 5 7 4.6 4 5v13c3-.4 6 0 8 1.5 2-1.5 5-1.9 8-1.5V5c-3-.4-6 0-8 1.5z"/><path d="M12 6.5v13"/>';
 function shBtn(attrs, label) { return '<button class="shbtn" type="button" ' + attrs + '>' + svg('share') + (label || 'مشاركة') + '</button>'; }
 function shareTxt(txt) {
@@ -2653,11 +2658,11 @@ function backNav() {   // يعيد false عندما يجب الخروج من ا�
 }
 try {
   var APP_P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App;
-  if (NAT && APP_P && APP_P.addListener) APP_P.addListener('backButton', function () { if (!backNav()) { try { APP_P.exitApp(); } catch (e) {} } });
+  if (NAT && APP_P && APP_P.addListener) { var _bl = APP_P.addListener('backButton', function () { if (!backNav()) { try { APP_P.exitApp(); } catch (e) {} } }); if (_bl && _bl.catch) _bl.catch(function () {}); }
 } catch (e) {}
 
 /* ---------- تمييز الصلاة الحالية أو القادمة ---------- */
-function hlKey(tt) { var c = currentKey(tt); return c === 'sunrise' ? 'dhuhr' : (c || 'fajr'); }
+function hlKey(tt) { try { return nextPrayer(tt).k; } catch (e) { return 'fajr'; } }   // الإطار دائمًا على الصلاة القادمة
 
 
 function hijriNum(ms, tz) {
@@ -2830,7 +2835,7 @@ function viewHome() {
   return { title: 'روح', back: null, html: h };
 }
 function viewAdhkar() {
-  return { title: 'الأذكار', back: null, html: '<div class="grid2">' + tile('zk-morning', 'sun', 'أذكار الصباح') + tile('zk-evening', 'moon', 'أذكار المساء') + tile('zk-sleep', 'moon', 'أذكار النوم') + tile('zk-wake', 'sun', 'أذكار الاستيقاظ') + tile('zk-salah', 'mosque', 'أذكار بعد الصلاة') + tile('inprayer', 'book', 'أذكار في الصلاة') + tile('hisn', 'scroll', 'حصن المسلم', 'كل الأبواب') +
+  return { title: 'الأذكار', back: null, html: '<div class="grid2">' + tile('zk-morning', 'sun', 'أذكار الصباح') + tile('zk-evening', 'moon', 'أذكار المساء') + tile('zk-sleep', 'moon', 'أذكار النوم') + tile('zk-wake', 'sun', 'أذكار الاستيقاظ') + tile('zk-salah', 'mosque', 'أذكار بعد الصلاة') + tile('inprayer', 'mosque2', 'أذكار في الصلاة') + tile('hisn', 'scroll', 'حصن المسلم', 'كل الأبواب') +
     tile('sunan', 'scroll', 'السنن اليومية', 'المنزل، الخلاء، المسجد…') + tile('duas', 'dua', 'الأدعية', 'من الكتاب والسنة') + tile('ruqya', 'shield', 'الرقية والتحصين') + tile('hadith', 'book', 'الأحاديث', 'من الصحيحين') + '</div>' };
 }
 function viewZk(arg) {
@@ -3130,21 +3135,8 @@ document.addEventListener('change', function (e) {
 
 /* ---------- البداية ---------- */
 function showSplash() {
-  var SS = RC.splash.map(function (x) { return x.s; }).concat([
-    'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، وَبَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ وَبَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ فِي الْعَالَمِينَ إِنَّكَ حَمِيدٌ مَجِيدٌ',
-    'صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ'
-  ]), DD = RC.splash.map(function (x) { return x.d; }).concat([
-    'سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ',
-    'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ',
-    'حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ ۖ عَلَيْهِ تَوَكَّلْتُ ۖ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
-    'لَّا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ',
-    'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ نَبِيًّا'
-  ]), last = [-1, -1];   // يتغيّر الذكر والصلاة على النبي في كل مرة يُفتح التطبيق، ولا يتكرران مرتين متتاليتين
-  try { last = JSON.parse(localStorage.getItem('ruh-spl')) || last; } catch (e) {}
-  function pickNew(n, prev) { var i; do { i = Math.floor(Math.random() * n); } while (n > 1 && i === prev); return i; }
-  var si = pickNew(SS.length, last[0]), di = pickNew(DD.length, last[1]);
-  try { localStorage.setItem('ruh-spl', JSON.stringify([si, di])); } catch (e) {}
-  var sp = { s: SS[si], d: DD[di] }, el = $('#splash');
+  /* ثابتان في كل مرة: صيغة واحدة للصلاة على النبي وصيغة واحدة للذكر */
+  var sp = { s: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، وَبَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ وَبَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ فِي الْعَالَمِينَ إِنَّكَ حَمِيدٌ مَجِيدٌ', d: 'سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ' }, el = $('#splash');
     el.innerHTML = '<div class="rays"></div><svg class="frame" viewBox="0 0 360 780" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="lat" width="36" height="36" patternUnits="userSpaceOnUse"><g fill="none" stroke="#E0B35A" stroke-width=".9"><circle cx="0" cy="0" r="18"/><circle cx="36" cy="0" r="18"/><circle cx="0" cy="36" r="18"/><circle cx="36" cy="36" r="18"/><circle cx="18" cy="18" r="18"/></g></pattern><pattern id="vine" width="44" height="44" patternUnits="userSpaceOnUse"><g fill="none" stroke="#E8C06A" stroke-width="1.1" stroke-linecap="round"><path id="vs" d="M4 40C4 26 20 28 22 16C24 4 38 6 37 16C36 23 28 22 29 16"/><ellipse cx="14" cy="25" rx="5.5" ry="2.4" transform="rotate(-55 14 25)" fill="#E8C06A" fill-opacity=".35"/><ellipse cx="30" cy="8" rx="4.5" ry="2" transform="rotate(35 30 8)" fill="#E8C06A" fill-opacity=".35"/><use href="#vs" transform="rotate(180 22 22)"/></g></pattern><radialGradient id="gin" cx="50%" cy="22%" r="75%"><stop offset="0" stop-color="#2E8F6E" stop-opacity=".55"/><stop offset=".55" stop-color="#0B4A3A" stop-opacity=".18"/><stop offset="1" stop-color="#021610" stop-opacity=".0"/></radialGradient><linearGradient id="gf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBE7A6"/><stop offset=".4" stop-color="#C2923D"/><stop offset=".7" stop-color="#F4D78E"/><stop offset="1" stop-color="#A57A2C"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3C8"/><stop offset="1" stop-color="#D9A845"/></linearGradient><filter id="gw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path fill-rule="evenodd" fill="#031510" fill-opacity=".62" d="M24 780V325C24 285 38 275 38 246C38 170 110 120 150 66C162 50 172 36 180 14C188 36 198 50 210 66C250 120 322 170 322 246C322 275 336 285 336 325V780Z M56 780V330C56 300 70 292 70 270C70 210 130 170 164 110C172 96 176 84 180 64C184 84 188 96 196 110C230 170 290 210 290 270C290 292 304 300 304 330V780Z"/><path fill-rule="evenodd" fill="url(#vine)" opacity=".85" d="M24 780V325C24 285 38 275 38 246C38 170 110 120 150 66C162 50 172 36 180 14C188 36 198 50 210 66C250 120 322 170 322 246C322 275 336 285 336 325V780Z M56 780V330C56 300 70 292 70 270C70 210 130 170 164 110C172 96 176 84 180 64C184 84 188 96 196 110C230 170 290 210 290 270C290 292 304 300 304 330V780Z"/><path d="M56 780V330C56 300 70 292 70 270C70 210 130 170 164 110C172 96 176 84 180 64C184 84 188 96 196 110C230 170 290 210 290 270C290 292 304 300 304 330V780Z" fill="url(#gin)"/><path d="M24 780V325C24 285 38 275 38 246C38 170 110 120 150 66C162 50 172 36 180 14C188 36 198 50 210 66C250 120 322 170 322 246C322 275 336 285 336 325V780Z" fill="none" stroke="url(#gf)" stroke-width="3.2"/><path d="M24 780V325C24 285 38 275 38 246C38 170 110 120 150 66C162 50 172 36 180 14C188 36 198 50 210 66C250 120 322 170 322 246C322 275 336 285 336 325V780Z" fill="none" stroke="url(#gf)" stroke-width="1" stroke-opacity=".8" transform="translate(180 400) scale(.965) translate(-180 -400)"/><g filter="url(#gw)"><path d="M56 780V330C56 300 70 292 70 270C70 210 130 170 164 110C172 96 176 84 180 64C184 84 188 96 196 110C230 170 290 210 290 270C290 292 304 300 304 330V780Z" fill="none" stroke="url(#gf)" stroke-width="3.6"/></g><path d="M56 780V330C56 300 70 292 70 270C70 210 130 170 164 110C172 96 176 84 180 64C184 84 188 96 196 110C230 170 290 210 290 270C290 292 304 300 304 330V780Z" fill="none" stroke="url(#gf)" stroke-width="1" stroke-opacity=".85" transform="translate(180 460) scale(.955) translate(-180 -460)"/><path d="M56 780V330C56 300 70 292 70 270C70 210 130 170 164 110C172 96 176 84 180 64C184 84 188 96 196 110C230 170 290 210 290 270C290 292 304 300 304 330V780Z" fill="none" stroke="#F1D58E" stroke-width="3" stroke-dasharray="0.1 8.5" stroke-linecap="round" stroke-opacity=".8" transform="translate(180 470) scale(.955) translate(-180 -470)"/><path d="M180 66V92" stroke="#E8C06A" stroke-width="1.3"/><circle cx="180" cy="64" r="3.4" fill="#F4D78E"/><g filter="url(#gw)"><path transform="translate(158 96) scale(.5)" d="M64 8A44 44 0 1 0 92 70A36 36 0 1 1 64 8Z" fill="url(#gm)"/></g></svg><svg class="mosque" viewBox="0 0 400 170" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><linearGradient id="gmo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8EFD2"/><stop offset="1" stop-color="#D8B866"/></linearGradient></defs><g fill="#E8C877" fill-opacity=".2" transform="translate(200 170) scale(1.22) translate(-200 -170)"><path d="M0 170V138h400v32z"/><path d="M128 138v-34c0-34 30-52 72-52s72 18 72 52v34z"/><path d="M200 52v-14"/><path d="M30 138v-16c0-18 14-26 28-26s28 8 28 26v16z"/><path d="M314 138v-16c0-18 14-26 28-26s28 8 28 26v16z"/><path d="M96 138V70h16v68z"/><path d="M92 70h24l-4-6H96z"/><path d="M97 64c0-14 7-26 7-26s7 12 7 26z"/><path d="M288 138V70h16v68z"/><path d="M284 70h24l-4-6h-16z"/><path d="M289 64c0-14 7-26 7-26s7 12 7 26z"/></g><g fill="url(#gmo)" stroke="none"><path d="M0 170V138h400v32z"/><path d="M128 138v-34c0-34 30-52 72-52s72 18 72 52v34z"/><path d="M200 52v-14"/><path d="M30 138v-16c0-18 14-26 28-26s28 8 28 26v16z"/><path d="M314 138v-16c0-18 14-26 28-26s28 8 28 26v16z"/><path d="M96 138V70h16v68z"/><path d="M92 70h24l-4-6H96z"/><path d="M97 64c0-14 7-26 7-26s7 12 7 26z"/><path d="M288 138V70h16v68z"/><path d="M284 70h24l-4-6h-16z"/><path d="M289 64c0-14 7-26 7-26s7 12 7 26z"/></g><g fill="#0A3A30"><path d="M196 38a4 4 0 1 1 6 3.4A3 3 0 1 0 196 38z"/><circle cx="104" cy="34" r="1.8"/><circle cx="296" cy="34" r="1.8"/><path d="M186 138v-22c0-8 6-12 14-12s14 4 14 12v22z" fill-opacity=".85"/><path d="M160 138v-14c0-6 4-9 9-9s9 3 9 9v14z" fill-opacity=".7"/><path d="M222 138v-14c0-6 4-9 9-9s9 3 9 9v14z" fill-opacity=".7"/><path d="M52 138v-10c0-5 3-8 6-8s6 3 6 8v10z" fill-opacity=".7"/><path d="M336 138v-10c0-5 3-8 6-8s6 3 6 8v10z" fill-opacity=".7"/><rect x="102" y="92" width="4" height="9" rx="2" fill-opacity=".8"/><rect x="294" y="92" width="4" height="9" rx="2" fill-opacity=".8"/></g></svg><div class="dust"></div><div class="dust"></div><div class="bism" lang="ar">' + esc(BAS || 'بسم الله الرحمن الرحيم') + '</div><div class="sdiv"><i></i></div><div class="s" lang="ar">' + esc(sp.s) + '</div><div class="d" lang="ar">' + esc(sp.d) + '</div><button class="btn" data-act="splash" id="splashbtn">ادخل</button>';
   el.hidden = false;
   var b = $('#splashbtn'); if (b) b.focus();
