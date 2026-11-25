@@ -53,7 +53,7 @@ with open(os.path.join(RES, 'values', 'ic_launcher_background.xml'), 'w') as f:
 os.makedirs(os.path.join(RES, 'mipmap-anydpi-v26'), exist_ok=True)
 for n in ('ic_launcher', 'ic_launcher_round'):
     with open(os.path.join(RES, 'mipmap-anydpi-v26', n + '.xml'), 'w') as f:
-        f.write('<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@color/ic_launcher_background"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n')
+        f.write('<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://android.com">\n    <background android:drawable="@color/ic_launcher_background"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n')
 # حذف نسخة الأيقونة المتجهة الافتراضية كي لا يحدث تعارض بالأسماء
 import glob
 for p in glob.glob(os.path.join(RES, 'drawable*', 'ic_launcher_foreground.xml')):
