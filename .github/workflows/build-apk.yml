@@ -11,6 +11,7 @@ on:
       - 'package.json'
       - 'capacitor.config.json'
       - 'scripts/**'
+      - 'ruh-signing.keystore'
       - 'q/**'
       - '.github/workflows/build-apk.yml'
 
@@ -51,20 +52,44 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Icons and manifest
+      - name: Signing key (same key every build, so updates install over the old app)
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_SECRET_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KS_SECRET_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            echo "KS_PASS=$KS_SECRET_PASS" >> "$GITHUB_ENV"
+            echo "KS_ALIAS=${KS_SECRET_ALIAS:-ruh}" >> "$GITHUB_ENV"
+            echo "using keystore from repository secrets"
+          elif [ -f ruh-signing.keystore ]; then
+            cp ruh-signing.keystore "$RUNNER_TEMP/release.keystore"
+            echo "KS_PASS=ruhalmuslim2026" >> "$GITHUB_ENV"
+            echo "KS_ALIAS=ruh" >> "$GITHUB_ENV"
+            echo "using ruh-signing.keystore from the repository"
+          else
+            echo "::error::No signing key. Upload ruh-signing.keystore to the repository root, or add the KEYSTORE_BASE64 secret."
+            exit 1
+          fi
+          echo "KS_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Icons, version and manifest
+        env:
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: python3 scripts/prepare_android.py
 
       - name: Sync
         run: npx cap sync android
 
-      - name: Build and Sign APK
+      - name: Build debug APK
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
-          keytool -genkey -v -keystore release.keystore -alias ruh -keyalg RSA -keysize 2048 -validity 10000 -storepass 123456 -keypass 123456 -dname "CN=RuhAlmuslim, OU=App, O=Islamic, L=City, S=State, C=IQ"
-          $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | tail -n 1)/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app-aligned.apk
-          $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | tail -n 1)/apksigner sign --ks release.keystore --ks-pass pass:123456 --key-pass pass:123456 --out ../ruh-almuslim.apk app-aligned.apk
+
+      - name: Collect APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk ruh-almuslim.apk
 
       - uses: actions/upload-artifact@v4
         with:
@@ -77,3 +102,4 @@ jobs:
           tag_name: apk-${{ github.run_number }}
           name: روح المسلم (بناء ${{ github.run_number }})
           files: ruh-almuslim.apk
+          make_latest: true
