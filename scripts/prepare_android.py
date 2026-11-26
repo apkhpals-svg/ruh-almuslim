@@ -97,6 +97,7 @@ perms = [
     'android.permission.RECEIVE_BOOT_COMPLETED',
     'android.permission.VIBRATE',
     'android.permission.WAKE_LOCK',
+    'android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
     'android.permission.ACCESS_COARSE_LOCATION',
     'android.permission.ACCESS_FINE_LOCATION',
 ]
@@ -144,3 +145,100 @@ for page in ('www/index.html',):
         if 'var APP_BUILD = 0;' in t:
             open(page, 'w', encoding='utf-8').write(t.replace('var APP_BUILD = 0;', 'var APP_BUILD = ' + run + ';', 1))
             print('APP_BUILD =', run)
+
+
+# ---------- ملحق «روح المسلم للبطارية»: يفتح شاشة «غير مقيّد» بضغطة واحدة ----------
+PKG = 'com.ruhalmuslim.app'
+JDIR = os.path.join('android/app/src/main/java', *PKG.split('.'))
+os.makedirs(JDIR, exist_ok=True)
+with open(os.path.join(JDIR, 'BatteryPlugin.java'), 'w', encoding='utf-8') as f:
+    f.write("""package %s;
+
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.PowerManager;
+import android.provider.Settings;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+
+@CapacitorPlugin(name = "RuhBattery")
+public class BatteryPlugin extends Plugin {
+    private boolean unrestricted() {
+        if (Build.VERSION.SDK_INT < 23) return true;
+        PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+        return pm != null && pm.isIgnoringBatteryOptimizations(getContext().getPackageName());
+    }
+
+    @PluginMethod
+    public void status(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("unrestricted", unrestricted());
+        call.resolve(r);
+    }
+
+    @PluginMethod
+    public void open(PluginCall call) {
+        String pkg = getContext().getPackageName();
+        try {
+            Intent i = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + pkg));
+            getActivity().startActivity(i);
+        } catch (Exception e1) {
+            try {
+                getActivity().startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+            } catch (Exception e2) {
+                try {
+                    getActivity().startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + pkg)));
+                } catch (Exception e3) {
+                    call.reject("no settings");
+                    return;
+                }
+            }
+        }
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void appSettings(PluginCall call) {
+        try {
+            getActivity().startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName())));
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("no settings");
+        }
+    }
+}
+""" % PKG)
+MA = os.path.join(JDIR, 'MainActivity.java')
+with open(MA, 'w', encoding='utf-8') as f:
+    f.write("""package %s;
+
+import android.os.Bundle;
+import android.webkit.RenderProcessGoneDetail;
+import android.webkit.WebView;
+import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.WebViewListener;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(BatteryPlugin.class);
+        super.onCreate(savedInstanceState);
+        try {
+            getBridge().addWebViewListener(new WebViewListener() {
+                @Override
+                public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                    // لا يُغلق التطبيق إن مات مُصيِّر الويب؛ نعيد إنشاء الواجهة
+                    runOnUiThread(new Runnable() { public void run() { try { recreate(); } catch (Exception e) {} } });
+                    return true;
+                }
+            });
+        } catch (Throwable t) {}
+    }
+}
+""" % PKG)
+print('battery plugin written')
