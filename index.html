@@ -114,6 +114,11 @@ label.fld { display: flex; flex-direction: column; gap: 6px; font-size: 14px; co
 .src { font-size: 13px; color: var(--muted); }
 .note { font-size: 15px; color: var(--muted); border-inline-start: 3px solid var(--accent); padding-inline-start: 10px; }
 .heading { font-size: 18px; color: var(--primary); }
+.sshead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ssk { flex: none; font-size: 12px; padding: 2px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--accent); }
+.ssh { font-size: 15px; line-height: 1.95; margin: 0; }
+.ssw { color: var(--muted); }
+.ssgh { margin: 8px 4px 0; }
 [data-theme="dark"] .heading, :root:not([data-theme="light"]) .heading { color: var(--fg); }
 .qtext { font-family: var(--quran-font); font-size: 28px; line-height: 2.25; background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; text-wrap: pretty; }
 .qlab { font-family: var(--f-ui); font-size: 13px; color: var(--accent); margin-top: 4px; }
@@ -1500,8 +1505,8 @@ function defaults() {
     set: {
       city: 'damascus', lat: 33.5138, lng: 36.2765, tz: 'Asia/Damascus', method: 'mwl', asr: 1, theme: 'auto', qfont: 'madina', qsize: 24, sound: true,
       alerts: { fajr: 1, sunrise: 0, dhuhr: 1, asr: 1, maghrib: 1, isha: 1 },
-      fajrEarly: { on: 1, min: 30 }, jumuah: { on: 1, min: 60 }, salawat: { on: 1, min: 60 }, dhikr: { on: 1, min: 45 }, mAdhkar: 1, eAdhkar: 1,
-      adk: { mOff: 20, eMode: 'asr', eOff: 30 }, kahf: { on: 1, min: 60 }, wird: { on: 0, freq: '1', pages: 1, off: 30 },
+      fajrEarly: { on: 1, min: 30 }, jumuah: { on: 1, min: 60 }, salawat: { on: 1, min: 120 }, dhikr: { on: 1, min: 120 }, mAdhkar: 1, eAdhkar: 1,
+      adk: { mOff: 20, eMode: 'asr', eOff: 30 }, kahf: { on: 1, min: 60 }, duha: { on: 0, mode: 'best', min: 45 }, wird: { on: 0, freq: '1', pages: 1, off: 30 },
       fast: { mon: 1, thu: 1, white: 1, extra: 1, eve: 1, sahurOn: 1, sahur: 45, adj: 0 }
     },
     tasks: [], td: {}, letters: [], qmark: null, fasts: {}, zc: {}, tc: {}, tt: {}, tday: {}, fired: {}, wd: {}, wpos: 1, updatedAt: 0
@@ -1676,6 +1681,11 @@ var LAST = { salawat: Date.now(), dhikr: Date.now() };
 var SAL = ['اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', 'صَلَّى اللَّهُ عَلَى مُحَمَّدٍ وَسَلَّمَ', 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ'];
 var DHK = ['سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ', 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', 'لَا إِلَهَ إِلَّا اللَّهُ', 'سُبْحَانَ اللَّهِ الْعَظِيمِ', 'الْحَمْدُ لِلَّهِ', 'اللَّهُ أَكْبَرُ'];
 function pickRand(a) { return a[Math.floor(Math.random() * a.length)]; }
+function duhaWin(t) { return { a: t.sunrise + 15 * 60000, b: t.dhuhr - 10 * 60000 }; }   // من ارتفاع الشمس قيد رمح إلى قبيل الزوال
+function duhaAt(t, d) {
+  var w = duhaWin(t), x = d.mode === 'early' ? t.sunrise + 20 * 60000 : d.mode === 'custom' ? t.sunrise + (+d.min || 45) * 60000 : (w.a + w.b) / 2;   // الأفضل: اشتداد الضحى، نحو منتصف وقتها
+  return Math.max(w.a, Math.min(w.b, x));
+}
 function dayEvents(tt, ms) {   // ms: لجدولة يوم آخر غير اليوم (يُحسب الصيام لذلك اليوم)
   var s = S.set, t = tt.t, ev = [], fri = isFriday(tt);
   ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].forEach(function (k) {
@@ -1695,6 +1705,7 @@ function dayEvents(tt, ms) {   // ms: لجدولة يوم آخر غير اليو
   if (s.wird && s.wird.on) wirdSlots(s.wird, t).forEach(function (sl, i, all) {
     if (!isNaN(sl.at)) ev.push({ key: 'w' + i, at: sl.at, title: 'ورد القرآن' + (all.length > 1 ? ' (' + sl.name + ')' : ''), body: 'حان وقت وردك: اقرأ ' + pagesWord(s.wird.pages) + ' من المصحف.' });
   });
+  if (s.duha && s.duha.on && !isNaN(t.sunrise) && !isNaN(t.dhuhr) && !isNaN(t.maghrib)) ev.push({ key: 'du', at: duhaAt(t, s.duha), title: 'صلاة الضحى', body: 'حان وقت صلاة الضحى، ركعتان فأكثر.\nقال رسول الله ﷺ: «وَيُجْزِئُ مِنْ ذَلِكَ رَكْعَتَانِ يَرْكَعُهُمَا مِنَ الضُّحَى». رواه مسلم' });
   if (fri && s.jumuah.on && !isNaN(t.dhuhr)) ev.push({ key: 'jm', at: t.dhuhr - s.jumuah.min * 60000, title: 'يوم الجمعة', body: 'اغتسل وبكّر إلى المسجد، واقرأ سورة الكهف، وأكثر من الصلاة على النبي ﷺ.' });
   var fp = ms ? { a: fastInfo(ms, tt.tz), b: fastInfo(ms + FDAY, tt.tz) } : fastPair(tt), f = s.fast;
   if (f.eve && fp.b && FLAB[fp.b.kind] && !isNaN(t.isha)) ev.push({ key: 'fn', at: t.isha, title: 'غدًا ' + flab(fp.b), body: 'انوِ الصيام من الليل، وتسحّر فإن في السحور بركة.' + (fp.b.kind === 'white' ? '\nالأيام البيض هي الثالث عشر والرابع عشر والخامس عشر من كل شهر هجري.' : '') + '\n' + fadlOf(fp.b.kind) });
@@ -1723,42 +1734,54 @@ if (NAT) {
 }
 function natSched(force) {
   if (!NAT) return;
-  try { natSched0(force); } catch (e) { NATL.sig = ''; }
+  try { natSched0(force); } catch (e) { NATL.busy = 0; }
+}
+var NAT_SETKEYS = function () { var x = S.set; return [x.alerts, x.fast, x.salawat, x.dhikr, x.fajrEarly, x.jumuah, x.mAdhkar, x.eAdhkar, x.adk, x.kahf, x.duha, x.wird, x.city, x.method, x.asr, x.lat, x.lng]; };
+function natExactAsk() {   // تنبيه واضح مرة واحدة فقط لتفعيل «السماح بضبط المنبهات والتذكيرات»
+  try { if (localStorage.getItem('ruh-exact-asked') === '1' || document.getElementById('exov')) return; localStorage.setItem('ruh-exact-asked', '1'); } catch (e) { return; }
+  var o = document.createElement('div'); o.className = 'updov'; o.id = 'exov'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+  o.innerHTML = '<div class="updbox"><div class="ico">⏰</div><h3>تفعيل المنبّهات الدقيقة</h3><p>لتصل الأذان والأذكار في وقتها بالثانية والتطبيق مغلق وبلا إنترنت، فعّل خيار «السماح بضبط المنبهات والتذكيرات» لروح المسلم في الشاشة التالية. تفعله مرة واحدة فقط.</p><div class="row2"><button class="go" type="button" id="exgo">فتح الإعدادات</button><button type="button" id="exlater">لاحقاً</button></div></div>';
+  document.body.appendChild(o);
+  document.getElementById('exlater').onclick = function () { o.remove(); };
+  document.getElementById('exgo').onclick = function () { o.remove(); try { NAT.changeExactNotificationSetting().catch(function () {}); } catch (e) {} };
 }
 function natSched0(force) {
-  var sig = JSON.stringify([S.set.alerts, S.set.fast, S.set.salawat, S.set.dhikr, S.set.fajrEarly, S.set.jumuah, S.set.mAdhkar, S.set.eAdhkar, S.set.adk, S.set.kahf, S.set.wird, S.set.city, S.set.method, S.set.asr, S.set.lat, S.set.lng, Math.floor(Date.now() / 21600000)]);
-  if (sig === NATL.sig && (!force || Date.now() - NATL.t < 60000)) return;
-  NATL.t = Date.now();
+  if (NATL.busy && Date.now() - NATL.busy < 60000) return;
+  NATL.busy = Date.now();
+  var done = function () { NATL.busy = 0; };
   NAT.checkPermissions().then(function (p) { return p.display === 'prompt' || p.display === 'prompt-with-rationale' ? NAT.requestPermissions() : p; }).then(function (p) {
     NATP = p.display === 'granted' ? 'granted' : 'denied'; window.Notification.permission = NATP; try { natStatusFill(); } catch (e) {}
     if (NATP !== 'granted') return;
-    NATL.sig = sig;
-    return (NAT.deleteChannel ? NAT.deleteChannel({ id: 'ruh' }).catch(function () {}) : Promise.resolve()).then(function () { return NAT.createChannel({ id: 'ruh5', name: 'تذكيرات روح المسلم', description: 'الأذان والأذكار والصيام', importance: 5, visibility: 1, vibration: true, lights: true }); }).catch(function () {})
-      .then(function () { return NAT.getPending(); })
-      .then(function (pd) {
-        var now = Date.now(), seen = {}, items = [];
-        buildSched(21, 30, 250).forEach(function (ev) {
-          if (ev.at <= now + 5000) return;
-          var id = natId(ev.id + '@' + ev.at + '#5'); if (seen[id]) return; seen[id] = 1;
-          items.push({ id: id, title: ev.title, body: ev.body, largeBody: ev.body, schedule: { at: new Date(ev.at), allowWhileIdle: true }, channelId: 'ruh5', smallIcon: 'ic_stat_icon', iconColor: '#D4AF37', extra: { kind: ev.kind } });
-        });
-        items = items.slice(0, 250);   // أقل بكثير من حد ٥٠٠ منبّه في أندرويد
-        var keep = {}; items.forEach(function (x) { keep[x.id] = 1; });
-        var stale = ((pd && pd.notifications) || []).filter(function (x) { return !keep[x.id]; }).map(function (x) { return { id: x.id }; });
-        // نلغي القديم فقط ثم نجدول؛ فلا يبقى الجدول فارغًا لحظة إن أُغلق التطبيق في المنتصف
-        return (stale.length ? NAT.cancel({ notifications: stale }) : Promise.resolve()).then(function () { var ch = Promise.resolve(); for (var q = 0; q < items.length; q += 40) (function (part) { ch = ch.then(function () { return NAT.schedule({ notifications: part }); }); })(items.slice(q, q + 40)); return ch; });
-      })
-      .then(function () {
-        try {
-          if (NAT.checkExactNotificationSetting) NAT.checkExactNotificationSetting().then(function (r) {
-            if (r && r.exact_alarm !== 'granted') {
-              var lt = +localStorage.getItem('ruh-exact') || 0;
-              if (Date.now() - lt > 3600000) { localStorage.setItem('ruh-exact', String(Date.now())); if (NAT.changeExactNotificationSetting) NAT.changeExactNotificationSetting().catch(function () {}); }
+    // ٤) فحص صلاحية المنبّهات الدقيقة (أندرويد ١٢+)
+    var exChk = NAT.checkExactNotificationSetting ? NAT.checkExactNotificationSetting().catch(function () { return null; }) : Promise.resolve(null);
+    return exChk.then(function (r) {
+      var exact = !r || r.exact_alarm === 'granted';
+      try { if (exact) localStorage.removeItem('ruh-exact-asked'); else natExactAsk(); } catch (e) {}
+      // ٢) لا نعيد الجدولة إلا إذا تغيّر اليوم أو الإعدادات أو حالة المنبّهات الدقيقة
+      var day = RL.ymdKey(Date.now(), S.set.tz || devTz()), sig = JSON.stringify([NAT_SETKEYS(), day, exact]), last = '';
+      try { last = localStorage.getItem('ruh-sched-sig') || ''; } catch (e) {}
+      return NAT.getPending().then(function (pd) {
+        var pend = (pd && pd.notifications) || [];
+        if (last === sig && pend.length >= 5) return;   // الجدول سليم وموجود
+        return (NAT.deleteChannel ? NAT.deleteChannel({ id: 'ruh' }).catch(function () {}) : Promise.resolve())
+          .then(function () { return NAT.createChannel({ id: 'ruh5', name: 'تذكيرات روح المسلم', description: 'الأذان والأذكار والصيام', importance: 5, visibility: 1, vibration: true, lights: true }); }).catch(function () {})
+          .then(function () { return pend.length ? NAT.cancel({ notifications: pend.map(function (x) { return { id: x.id }; }) }) : null; })   // مسح القديم كله قبل الجديد
+          .then(function () {
+            var seen = {}, items = [], list = buildSched(21, 40, 250);
+            for (var i = 0; i < list.length; i++) {
+              var ev = list[i], scheduleDate = new Date(ev.at);
+              if (scheduleDate.getTime() <= Date.now() + 15000) continue;   // ١) لا نمرّر أي موعد فات أو أقل من ١٥ ثانية
+              var id = natId(ev.id + '@' + ev.at + '#5'); if (seen[id]) continue; seen[id] = 1;
+              items.push({ id: id, title: ev.title, body: ev.body, largeBody: ev.body, schedule: { at: scheduleDate, allowWhileIdle: true }, channelId: 'ruh5', smallIcon: 'ic_stat_icon', iconColor: '#D4AF37', extra: { kind: ev.kind } });
             }
-          }).catch(function () {});
-        } catch (e) {}
+            items = items.slice(0, 250);   // أقل بكثير من حد ٥٠٠ منبّه في أندرويد
+            var ch = Promise.resolve(); for (var q = 0; q < items.length; q += 40) (function (part) { ch = ch.then(function () { return NAT.schedule({ notifications: part }); }); })(items.slice(q, q + 40));
+            return ch;
+          })
+          .then(function () { try { localStorage.setItem('ruh-sched-sig', sig); } catch (e) {} });
       });
-  }).catch(function () { NATL.sig = ''; });
+    });
+  }).then(done, function () { done(); });
 }
 
 
@@ -1808,12 +1831,12 @@ function buildSched(DAYS, HRS, CAP) {   // الافتراضي ٣ أيام للـ
     dayEvents(tt, noon).forEach(function (ev) { if (ev.at > now - 3600000) out.push({ id: 'd' + tt.key + '-' + ev.key, at: ev.at, title: ev.title, body: ev.body, kind: ev.kind || 'n' }); });
   }
   out.sort(function (a, b) { return a.at - b.at; }); var REM = Math.min(40, CAP >> 2); if (out.length > CAP - REM) out.length = CAP - REM;   // الأساسيات أولًا ثم التذكيرات العامة
-  function nearFixed(at) { return out.some(function (x) { return Math.abs(x.at - at) < 6 * 60000; }); }   // لا حدثان متقاربان (صلاة/ذكر/صلاة على النبي)
+  function nearFixed(at) { return out.some(function (x) { return Math.abs(x.at - at) < 10 * 60000; }); }   // لا حدثان متقاربان (صلاة/ذكر/صلاة على النبي)
   function quiet(at) { var q = RL.partsIn(at, tz), m = q.h * 60 + q.mi; return m >= 1410 || m < 240; }   // لا تذكير عام بين ١١:٣٠ ليلًا و٤ فجرًا
   var end = now + HRS * 3600000;
-  [['salawat', 'صلِّ على النبي ﷺ', 0, function () { return pickRand(SAL); }], ['dhikr', 'اذكر الله', 15, function () { return pickRand(DHK.concat(RC.quotes)); }]].forEach(function (g) {
+  [['salawat', 'صلِّ على النبي ﷺ', 0, function () { return pickRand(SAL); }], ['dhikr', 'اذكر الله', 1, function () { return pickRand(DHK.concat(RC.quotes)); }]].forEach(function (g) {
     var c = s[g[0]]; if (!c || !c.on || !(c.min >= 5)) return;
-    var nRem = 0, step = c.min * 60000, off = g[2] * 60000, at = Math.ceil((now - off) / step) * step + off;
+    var nRem = 0, step = c.min * 60000, off = g[2] ? step / 2 : 0, at = Math.ceil((now - off) / step) * step + off;
     if (at <= now + 20000) at += step;
     for (; at < end && nRem < (REM >> 1); at += step) if (!quiet(at) && !nearFixed(at)) { nRem++; out.push({ id: 'ruh-remind', at: at, title: g[1], body: g[3](), kind: 'n' }); }
   });
@@ -1824,7 +1847,7 @@ function pushSched(force) {
   if (NAT) { natSched(force); return; }
   try {
     if (!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
-    var sig = JSON.stringify([S.set.alerts, S.set.fast, S.set.salawat, S.set.dhikr, S.set.fajrEarly, S.set.jumuah, S.set.mAdhkar, S.set.eAdhkar, S.set.adk, S.set.kahf, S.set.wird, S.set.city, S.set.method, S.set.asr, S.set.lat, S.set.lng, Math.floor(Date.now() / 21600000)]);
+    var sig = JSON.stringify([S.set.alerts, S.set.fast, S.set.salawat, S.set.dhikr, S.set.fajrEarly, S.set.jumuah, S.set.mAdhkar, S.set.eAdhkar, S.set.adk, S.set.kahf, S.set.duha, S.set.wird, S.set.city, S.set.method, S.set.asr, S.set.lat, S.set.lng, Math.floor(Date.now() / 21600000)]);
     if (!force && sig === SCH.last) return;
     SCH.last = sig;
     var ev = buildSched();
@@ -2579,9 +2602,152 @@ IC.share = '<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><cir
 IC.mosque = '<path d="M2.5 21h19"/><path d="M5 21v-6.5h14V21"/><path d="M7.2 14.5a4.8 4.8 0 0 1 9.6 0"/><path d="M12 9.7V7"/><path d="M12 7c-.9 0-1.6-.7-1.6-1.5S11.1 4 12 4c-.4.4-.6.9-.6 1.5S11.6 6.6 12 7z"/><path d="M3.5 21V10l1-1.8 1 1.8v11"/><path d="M18.5 21V10l1-1.8 1 1.8v11"/><path d="M10 21v-3.2a2 2 0 0 1 4 0V21"/>';
 IC.mosque2 = '<path d="M2.5 21h19"/><path d="M4 21v-5.5h10V21"/><path d="M5.2 15.5C5.2 11.8 7.2 9.8 9 8.2c1.8 1.6 3.8 3.6 3.8 7.3"/><path d="M9 8.2V6.3"/><path d="M8.2 4.6a1.1 1.1 0 1 0 1.5.9"/><path d="M16.5 21V9.5"/><path d="M15.4 9.5h2.2l-1.1-2.3z"/><path d="M16.5 7.2V5.8"/><path d="M8 21v-2.6a1 1 0 0 1 2 0V21"/><path d="M14 16.5h2.5M16.5 12.5h2.2V21"/>';
 IC.wird = '<path d="M12 6.5C10 5 7 4.6 4 5v13c3-.4 6 0 8 1.5 2-1.5 5-1.9 8-1.5V5c-3-.4-6 0-8 1.5z"/><path d="M12 6.5v13"/>';
-function shBtn(attrs, label) { return '<button class="shbtn" type="button" ' + attrs + '>' + svg('share') + (label || 'مشاركة') + '</button>'; }
+function shBtn(attrs, label, noimg) { return '<span style="display:flex;gap:8px;flex-wrap:wrap"><button class="shbtn" type="button" ' + attrs + '>' + svg('share') + (label || 'مشاركة') + '</button>' + (noimg ? '' : '<button class="shbtn" type="button" ' + attrs + ' data-img="1">' + svg('image') + 'مشاركة كصورة</button>') + '</span>'; }
+IC.image = '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3L15 13.5l5 4.5"/>';
+/* ---------- بطاقة صورة للمشاركة (بلا اسم تطبيق) ---------- */
+var SHCARD = (function () {
+  var TAU = Math.PI * 2;
+  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function gold(c, x0, y0, x1, y1, light) { var g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, light ? '#F3DE9A' : '#F6E3A1'); g.addColorStop(.45, '#D4AF37'); g.addColorStop(.7, '#F0D77C'); g.addColorStop(1, '#A57F1F'); return g; }
+  /* قوس محراب مدبّب بأكتاف */
+  function arch(c, x0, x1, yt, ya, yb) {
+    var w = x1 - x0, m = (x0 + x1) / 2, h = ya - yt;
+    c.moveTo(x0, yb); c.lineTo(x0, ya);
+    c.bezierCurveTo(x0, ya - h * .26, x0 + w * .04, ya - h * .36, x0 + w * .15, ya - h * .42);
+    c.bezierCurveTo(x0 + w * .27, ya - h * .48, m - w * .20, ya - h * .52, m - w * .10, ya - h * .72);
+    c.bezierCurveTo(m - w * .06, ya - h * .82, m - w * .02, ya - h * .92, m, yt);
+    c.bezierCurveTo(m + w * .02, ya - h * .92, m + w * .06, ya - h * .82, m + w * .10, ya - h * .72);
+    c.bezierCurveTo(m + w * .20, ya - h * .52, x1 - w * .27, ya - h * .48, x1 - w * .15, ya - h * .42);
+    c.bezierCurveTo(x1 - w * .04, ya - h * .36, x1, ya - h * .26, x1, ya);
+    c.lineTo(x1, yb);
+  }
+  function lattice(c, x, y, w, h, sz, col, al, lw) {
+    c.save(); c.strokeStyle = col; c.globalAlpha = al; c.lineWidth = lw;
+    for (var gy = y - sz; gy < y + h + sz; gy += sz) for (var gx = x - sz; gx < x + w + sz; gx += sz) {
+      var cx0 = gx + sz / 2, cy0 = gy + sz / 2, r = sz * .34;
+      [0, Math.PI / 4].forEach(function (rt) { c.save(); c.translate(cx0, cy0); c.rotate(rt); c.strokeRect(-r, -r, 2 * r, 2 * r); c.restore(); });
+      c.beginPath(); c.arc(cx0, cy0, r * .5, 0, TAU); c.stroke();
+      c.beginPath(); c.arc(gx, gy, r * .38, 0, TAU); c.stroke();
+    }
+    c.restore();
+  }
+  function leaf(c, x, y, ang, len) { c.save(); c.translate(x, y); c.rotate(ang); c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(len * .5, -len * .38, len, 0); c.quadraticCurveTo(len * .5, len * .38, 0, 0); c.stroke(); c.beginPath(); c.moveTo(len * .1, 0); c.lineTo(len * .8, 0); c.stroke(); c.restore(); }
+  function flower(c, x, y, r) { c.save(); c.translate(x, y); for (var i = 0; i < 6; i++) { c.rotate(TAU / 6); c.beginPath(); c.ellipse(r * .62, 0, r * .46, r * .24, 0, 0, TAU); c.stroke(); } c.beginPath(); c.arc(0, 0, r * .2, 0, TAU); c.stroke(); c.restore(); }
+  function vine(c, ox, oy, dir) {
+    c.save(); c.translate(ox, oy); c.scale(dir, 1);
+    c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(70, -10, 130, 40, 200, 20); c.bezierCurveTo(250, 8, 290, -20, 330, 10); c.stroke();
+    c.beginPath(); c.moveTo(70, -2); c.bezierCurveTo(60, 50, 110, 90, 160, 80); c.stroke();
+    c.beginPath(); c.moveTo(200, 20); c.bezierCurveTo(210, 70, 250, 95, 290, 80); c.stroke();
+    [[40, -4, -.5], [100, 14, .6], [150, 30, -.7], [230, 12, .6], [280, -10, -.6], [90, 62, 1.9], [140, 86, .3], [240, 88, 1.7]].forEach(function (l) { leaf(c, l[0], l[1], l[2], 34); });
+    flower(c, 190, 105, 30); flower(c, 335, 10, 26); flower(c, 165, 78, 18); flower(c, 296, 82, 20);
+    c.restore();
+  }
+  var T = {
+    emerald: { n: 'زمرّد ومحراب', top: 290, bot: 170, body: '#F4EBD0', title: 'g', src: '#E6C65A', verse: '#F6EBC8', dv: '#E6C65A', sh: 'rgba(0,0,0,.45)', sw: '#0B3A2C',
+      draw: function (c, W, H) {
+        var bg = c.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0F5441'); bg.addColorStop(1, '#073025'); c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        var x0 = 130, x1 = W - 130, yt = 70, ya = 400, yb = H - 70;
+        c.save(); c.beginPath(); c.rect(0, 0, W, H); arch(c, x0, x1, yt, ya, yb); c.lineTo(x0, yb); c.clip('evenodd'); lattice(c, 0, 0, W, H, 78, '#D4AF37', .62, 1.7); c.restore();
+        var inner = c.createRadialGradient(W / 2, H * .4, 60, W / 2, H * .5, H * .7); inner.addColorStop(0, '#16604A'); inner.addColorStop(1, '#0A3A2C'); c.save(); c.beginPath(); arch(c, x0, x1, yt, ya, yb); c.closePath(); c.fillStyle = inner; c.fill(); c.restore();
+        c.save(); c.shadowColor = 'rgba(0,0,0,.5)'; c.shadowBlur = 26; c.shadowOffsetY = 8; c.beginPath(); arch(c, x0, x1, yt, ya, yb); c.strokeStyle = gold(c, 0, 0, W, H); c.lineWidth = 16; c.lineJoin = 'round'; c.stroke(); c.restore();
+        c.beginPath(); arch(c, x0 + 22, x1 - 22, yt + 34, ya, yb); c.strokeStyle = 'rgba(246,227,161,.55)'; c.lineWidth = 2; c.stroke();
+        c.fillStyle = gold(c, 0, yb, W, yb + 60); c.fillRect(x0 - 10, yb - 8, x1 - x0 + 20, 12);
+      } },
+    black: { n: 'أسود وذهب', top: 190, bot: 190, body: '#F1E7C9', title: 'g', src: '#D9B547', verse: '#F6EBC8', dv: '#D4AF37', sh: 'rgba(0,0,0,.6)', sw: '#000',
+      draw: function (c, W, H) {
+        c.fillStyle = '#050505'; c.fillRect(0, 0, W, H);
+        var o = 46, bw = 84; c.save(); c.beginPath(); c.rect(o, o, W - 2 * o, H - 2 * o); c.rect(o + bw, o + bw, W - 2 * o - 2 * bw, H - 2 * o - 2 * bw); c.clip('evenodd');
+        c.strokeStyle = gold(c, 0, 0, W, H); c.lineWidth = 2.2; var st = 22;
+        for (var k = -H; k < W + H; k += st) { c.beginPath(); c.moveTo(k, 0); c.lineTo(k + H, H); c.stroke(); c.beginPath(); c.moveTo(k, H); c.lineTo(k + H, 0); c.stroke(); }
+        c.restore();
+        c.strokeStyle = gold(c, 0, 0, W, H); [[o, 5], [o + 12, 1.8], [o + bw - 12, 1.8], [o + bw, 5]].forEach(function (q) { c.lineWidth = q[1]; c.strokeRect(q[0], q[0], W - 2 * q[0], H - 2 * q[0]); });
+        var gg = c.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, H * .6); gg.addColorStop(0, 'rgba(212,175,55,.10)'); gg.addColorStop(1, 'rgba(212,175,55,0)'); c.fillStyle = gg; c.fillRect(o + bw, o + bw, W - 2 * (o + bw), H - 2 * (o + bw));
+      } },
+    ivory: { n: 'عاجي وزخرفة', top: 300, bot: 170, light: 1, body: '#3A2A12', title: 'd', src: '#8A6A1C', verse: '#2B1F0C', dv: '#B8922B', sh: 'rgba(255,255,255,.0)', sw: '#F7EFDC',
+      draw: function (c, W, H) {
+        var bg = c.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#FCF7EA'); bg.addColorStop(1, '#F3E8CB'); c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        c.fillStyle = '#C9A24A'; for (var d = 30; d < W - 20; d += 22) { [26, H - 26].forEach(function (yy) { c.beginPath(); c.arc(d, yy, 2.4, 0, TAU); c.fill(); }); } for (var e = 30; e < H - 20; e += 22) { [26, W - 26].forEach(function (xx) { c.beginPath(); c.arc(xx, e, 2.4, 0, TAU); c.fill(); }); }
+        var x0 = 96, x1 = W - 96, yt = 120, ya = 430, yb = H - 80;
+        c.save(); c.strokeStyle = gold(c, 0, 0, W, 400, 1); c.lineWidth = 2.2; vine(c, 70, 78, 1); vine(c, W - 70, 78, -1); c.restore();
+        c.save(); c.shadowColor = 'rgba(120,90,20,.35)'; c.shadowBlur = 14; c.shadowOffsetY = 5; c.beginPath(); arch(c, x0, x1, yt, ya, yb); c.strokeStyle = gold(c, 0, 0, W, H, 1); c.lineWidth = 9; c.lineJoin = 'round'; c.stroke(); c.restore();
+        c.beginPath(); arch(c, x0 + 24, x1 - 24, yt + 40, ya, yb); c.strokeStyle = gold(c, 0, 0, W, H, 1); c.lineWidth = 3; c.stroke();
+        c.beginPath(); arch(c, x0 + 44, x1 - 44, yt + 72, ya, yb); c.strokeStyle = 'rgba(184,146,43,.5)'; c.lineWidth = 1.5; c.stroke();
+      } },
+    arabesque: { n: 'عاجي ونقش عربي', top: 330, bot: 150, light: 1, body: '#3A2A12', title: 'd', src: '#8A6A1C', verse: '#2B1F0C', dv: '#B8922B', sh: 'rgba(255,255,255,0)', sw: '#FBF5E4',
+      draw: function (c, W, H) {
+        var bg = c.createRadialGradient(W / 2, H * .55, 60, W / 2, H * .55, H * .8); bg.addColorStop(0, '#FFFDF4'); bg.addColorStop(1, '#F1E5C4'); c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        c.save(); c.beginPath(); c.rect(0, 0, W, 360); c.clip(); lattice(c, 0, 0, W, 360, 74, '#C9A24A', .55, 1.6); c.restore();
+        c.save(); c.beginPath(); c.moveTo(0, 0); c.lineTo(W, 0); c.lineTo(W, 520); arch(c, -240, W + 240, 140, 520, 520); c.lineTo(0, 520); c.closePath();
+        var cover = c.createLinearGradient(0, 120, 0, 520); cover.addColorStop(0, 'rgba(252,247,234,0)'); cover.addColorStop(1, 'rgba(252,247,234,0)'); c.restore();
+        c.save(); c.beginPath(); arch(c, 40, W - 40, 150, 540, 540); c.lineTo(W - 40, H); c.lineTo(40, H); c.closePath(); c.fillStyle = bg; c.fill(); c.restore();
+        c.save(); c.shadowColor = 'rgba(120,90,20,.4)'; c.shadowBlur = 16; c.shadowOffsetY = 6; c.beginPath(); arch(c, 40, W - 40, 150, 540, 540); c.strokeStyle = gold(c, 0, 0, W, 600, 1); c.lineWidth = 10; c.lineJoin = 'round'; c.stroke(); c.restore();
+        c.fillStyle = gold(c, 0, H - 70, W, H); c.fillRect(0, H - 40, W, 8); c.globalAlpha = .6; c.fillRect(0, H - 60, W, 2.5); c.globalAlpha = 1;
+      } }
+  };
+  var ORDER = ['emerald', 'black', 'ivory', 'arabesque'];
+  function items(txt, th) {
+    var FT = '"Tajawal","Amiri",sans-serif', FV = '"KFGQPC Uthmanic Script HAFS","Amiri",serif';
+    var lines = String(txt).split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    return lines.map(function (ln, i) {
+      if (ln.charAt(0) === '﴿') return { t: ln, f: '50px ' + FV, c: th.verse, lh: 118, g: 34 };
+      if (i === 0 && lines.length > 1 && ln.length < 70 && ln.charAt(0) !== '«') return { t: ln, f: '700 50px ' + FT, c: th.src, lh: 88, g: 22, k: 't' };
+      if (/^(رواه|متفق|رواها|\(|سورة|\[|المصدر)/.test(ln) || (i > 0 && ln.length < 46 && /[٠-٩]|سورة/.test(ln))) return { t: ln, f: '500 34px ' + FT, c: th.src, lh: 62, g: 20, k: 's' };
+      return { t: ln, f: '700 41px ' + FT, c: th.body, lh: 84, g: 30 };
+    });
+  }
+  function render(txt, id, canvas, final) {
+    var th = T[id], W = 1080, side = id === 'black' ? 190 : id === 'emerald' ? 230 : 200, mw = W - 2 * side, it = items(txt, th), cx = canvas.getContext('2d'), total = 0;
+    canvas.width = W; canvas.height = 100; cx.direction = 'rtl';
+    it.forEach(function (q) { cx.font = q.f; var ws = q.t.split(/\s+/), out = [], cur = ''; ws.forEach(function (w) { var tr = cur ? cur + ' ' + w : w; if (cur && cx.measureText(tr).width > mw) { out.push(cur); cur = w; } else cur = tr; }); if (cur) out.push(cur); q.L = out; total += out.length * q.lh + q.g + (q.k === 't' ? 36 : q.k === 's' ? 40 : 0); });
+    var H = Math.max(1350, total + th.top + th.bot); canvas.height = H; cx.direction = 'rtl';
+    th.draw(cx, W, H);
+    function divider(yy) { cx.save(); var g = cx.createLinearGradient(W / 2 - 260, 0, W / 2 + 260, 0); g.addColorStop(0, 'rgba(212,175,55,0)'); g.addColorStop(.5, th.dv); g.addColorStop(1, 'rgba(212,175,55,0)'); cx.strokeStyle = g; cx.lineWidth = 2.4; cx.beginPath(); cx.moveTo(W / 2 - 260, yy); cx.lineTo(W / 2 + 260, yy); cx.stroke(); cx.fillStyle = th.dv; cx.translate(W / 2, yy); cx.rotate(Math.PI / 4); cx.fillRect(-8, -8, 16, 16); cx.restore(); }
+    var y = th.top + (H - th.top - th.bot - total) / 2; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    it.forEach(function (q) {
+      if (q.k === 's') { divider(y + 6); y += 40; }
+      cx.font = q.f; cx.shadowColor = th.sh; cx.shadowBlur = 6; cx.shadowOffsetY = 2;
+      cx.fillStyle = q.k === 't' && th.title === 'g' ? gold(cx, 0, y, 0, y + q.lh * q.L.length) : q.k === 't' ? '#8A6A1C' : q.c;
+      q.L.forEach(function (l) { cx.fillText(l, W / 2, y + q.lh / 2); y += q.lh; });
+      cx.shadowBlur = 0; cx.shadowOffsetY = 0; y += q.g;
+      if (q.k === 't') { divider(y - 2); y += 36; }
+    });
+  }
+  function preview(id) { var cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1350; var c = cv.getContext('2d'); T[id].draw(c, 1080, 1350); var sm = document.createElement('canvas'); sm.width = 108; sm.height = 135; sm.getContext('2d').drawImage(cv, 0, 0, 108, 135); sm.style.cssText = 'width:100%;border-radius:10px;display:block'; return sm; }
+  return { T: T, ORDER: ORDER, render: render, preview: preview };
+})();
+function shareImage(txt) {
+  var ld = []; try { ld = ['700 41px Tajawal', '500 33px Tajawal', '50px "KFGQPC Uthmanic Script HAFS"'].map(function (f) { return document.fonts.load(f, 'ابجد'); }); } catch (e) {}
+  var last = 'emerald'; try { last = localStorage.getItem('ruh-card') || 'emerald'; } catch (e) {}
+  var o = document.createElement('div'); o.setAttribute('role', 'dialog'); o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center';
+  o.innerHTML = '<div style="width:100%;max-width:560px;background:var(--bg,#0b100e);border-radius:22px 22px 0 0;padding:18px 16px 22px;border-top:1px solid var(--gold,#D4AF37)"><b style="display:block;text-align:center;margin-bottom:12px">اختر تصميم البطاقة</b><div id="cardpick" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div><button id="cardx" type="button" class="btn ghost" style="width:100%;margin-top:14px">إلغاء</button></div>';
+  document.body.appendChild(o);
+  var box = o.querySelector('#cardpick');
+  SHCARD.ORDER.forEach(function (id) {
+    var b = document.createElement('button'); b.type = 'button'; b.style.cssText = 'background:none;border:2px solid ' + (id === last ? 'var(--gold,#D4AF37)' : 'transparent') + ';border-radius:12px;padding:3px;color:inherit;font:inherit;font-size:.72em';
+    b.appendChild(SHCARD.preview(id)); var sp = document.createElement('span'); sp.textContent = SHCARD.T[id].n; sp.style.cssText = 'display:block;margin-top:4px'; b.appendChild(sp);
+    b.onclick = function () { try { localStorage.setItem('ruh-card', id); } catch (e) {} o.remove(); Promise.all(ld).catch(function () {}).then(function () { var cv = document.createElement('canvas'); SHCARD.render(txt, id, cv); cv.toBlob(function (bl) { if (bl) shareBlob(bl); else toast('تعذّر إنشاء الصورة'); }, 'image/png'); }); };
+    box.appendChild(b);
+  });
+  o.querySelector('#cardx').onclick = function () { o.remove(); };
+  o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
+}
+function shareBlob(bl) {
+  var P = window.Capacitor && Capacitor.Plugins || {}, name = 'share-' + Date.now() + '.png';
+  if (P.Filesystem && P.Share) {
+    var fr = new FileReader();
+    fr.onloadend = function () {
+      var b64 = String(fr.result).split(',')[1];
+      P.Filesystem.writeFile({ path: name, data: b64, directory: 'CACHE' }).then(function (r) { return P.Share.share({ files: [r.uri], dialogTitle: 'مشاركة عبر' }); }).catch(function (e) { if (!/cancel/i.test(String(e && e.message || e))) toast('تعذّرت المشاركة', 'حاول مرة أخرى.'); });
+    };
+    fr.readAsDataURL(bl); return;
+  }
+  try { var f = new File([bl], name, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f] }).catch(function () {}); return; } } catch (e) {}
+  var u = URL.createObjectURL(bl), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+}
+var SHIMG = false;
 function shareTxt(txt) {
-  var full = txt + '\n\n— تطبيق «روح المسلم»\n' + APPURL;
+  if (SHIMG) { SHIMG = false; shareImage(txt); return; }
+  var full = txt;   // بلا اسم تطبيق ولا رابط
   function fb() {
     try { if (navigator.share) { navigator.share({ text: full }).catch(function () { cp(); }); return; } } catch (e) {}
     cp();
@@ -2633,6 +2799,32 @@ function wirdSlots(w, t) {
 }
 function wirdTotal(w) { return (w.freq === 'after' ? 5 : (+w.freq || 1)) * Math.max(1, +w.pages || 1); }
 function pagesWord(n) { n = Math.max(1, +n || 1); return n === 1 ? 'صفحة واحدة' : n === 2 ? 'صفحتين' : n <= 10 ? ar(n) + ' صفحات' : ar(n) + ' صفحة'; }
+var DUHA_H = [
+  ['«يُصْبِحُ عَلَى كُلِّ سُلَامَى مِنْ أَحَدِكُمْ صَدَقَةٌ … وَيُجْزِئُ مِنْ ذَلِكَ رَكْعَتَانِ يَرْكَعُهُمَا مِنَ الضُّحَى»', 'رواه مسلم (٧٢٠)', 'السُّلَامَى: المفصل من مفاصل الجسم.'],
+  ['«كَانَ رَسُولُ اللَّهِ ﷺ يُصَلِّي الضُّحَى أَرْبَعًا وَيَزِيدُ مَا شَاءَ اللَّهُ»', 'رواه مسلم (٧١٩)', ''],
+  ['«صَلَاةُ الْأَوَّابِينَ حِينَ تَرْمَضُ الْفِصَالُ»', 'رواه مسلم (٧٤٨)', 'الفِصَال: صغار الإبل. وتَرمَض: أي تشتد عليها الرَّمضاء، وهي حرارة الرمل من الشمس. والمراد: حين يشتد حرّ الضحى، وهو أفضل وقتها.'],
+  ['«ثَلَاثُ سَاعَاتٍ كَانَ رَسُولُ اللَّهِ ﷺ يَنْهَانَا أَنْ نُصَلِّيَ فِيهِنَّ أَوْ أَنْ نَقْبُرَ فِيهِنَّ مَوْتَانَا: حِينَ تَطْلُعُ الشَّمْسُ بَازِغَةً حَتَّى تَرْتَفِعَ، وَحِينَ يَقُومُ قَائِمُ الظَّهِيرَةِ حَتَّى تَمِيلَ الشَّمْسُ، وَحِينَ تَضَيَّفُ الشَّمْسُ لِلْغُرُوبِ حَتَّى تَغْرُبَ»', 'رواه مسلم (٨٣١)', 'قائم الظهيرة: وقوف الشمس في وسط السماء قبل الزوال. وتَضَيَّف: أي تميل للغروب.'],
+  ['«لَا صَلَاةَ بَعْدَ الصُّبْحِ حَتَّى تَرْتَفِعَ الشَّمْسُ، وَلَا صَلَاةَ بَعْدَ الْعَصْرِ حَتَّى تَغِيبَ الشَّمْسُ»', 'متفق عليه: البخاري (٥٨٦) ومسلم (٨٢٧)', '']
+];
+function viewDuha() {
+  var s = S.set, d = s.duha, tt = todayTimes(), t = tt.t, tz = tt.tz, w = duhaWin(t), ok = !isNaN(t.sunrise) && !isNaN(t.dhuhr) && !isNaN(t.maghrib);
+  var F = function (x) { return '<b style="color:var(--accent)">' + RL.fmtTime(x, tz) + '</b>'; };
+  var q = function (i) {
+    var x = DUHA_H[i];
+    return '<p style="margin:10px 0 2px;line-height:2;font-weight:600">' + x[0] + '</p><p class="meta">' + x[1] + '</p>' + (x[2] ? '<p class="meta" style="font-style:italic">(' + x[2] + ')</p>' : '') + shBtn('data-act="dushare" data-i="' + i + '"');
+  };
+  var h = '<div class="stack"><div class="card stack"><b>تذكير صلاة الضحى</b><p class="meta">اختر الوقت الذي يصلك فيه التذكير، ويضبطه التطبيق دائمًا داخل وقت الجواز.</p>' + sw('تفعيل التذكير', 'duha.on', d.on) +
+    '<label class="fld">موعد التذكير<select data-path="duha.mode"><option value="best"' + (d.mode === 'best' ? ' selected' : '') + '>الأفضل: اشتداد الضحى</option><option value="early"' + (d.mode === 'early' ? ' selected' : '') + '>بعد الشروق بـ ٢٠ دقيقة</option><option value="custom"' + (d.mode === 'custom' ? ' selected' : '') + '>وقت أختاره بنفسي</option></select></label>' +
+    (d.mode === 'custom' ? num('بعد الشروق بكم دقيقة', 'duha.min', d.min, 15, 360) : '') + '</div>';
+  if (ok) h += '<div class="card stack"><b>اليوم</b><p class="meta">وقت الضحى: من ' + F(w.a) + ' إلى ' + F(w.b) + '</p><p class="meta">موعد تذكيرك: ' + F(duhaAt(t, d)) + '</p><p class="meta">«الأفضل» يعني حين يشتد الحر، ويحسبه التطبيق تقريبًا في منتصف الوقت بين الشروق والظهر.</p></div>';
+  h += '<div class="card stack"><b>فضلها وعددها</b>' + q(0) + q(1) + q(2) + '</div>';
+  h += '<div class="card stack"><b>أوقات النهي عن الصلاة</b>' + (ok ? '<p class="meta">أوقاتها اليوم بحسب مدينتك:</p>' +
+    '<p class="meta">١) من صلاة الفجر إلى أن ترتفع الشمس قدر رمح، أي إلى نحو ' + F(w.a) + ' (نحو ١٢ دقيقة بعد الشروق، ويُحتاط بربع ساعة)</p>' +
+    '<p class="meta">٢) حين تقوم الشمس في وسط السماء، من نحو ' + F(w.b) + ' إلى الزوال (دخول وقت الظهر ' + F(t.dhuhr) + ')</p>' +
+    '<p class="meta">٣) بعد صلاة العصر إلى تمام الغروب (' + F(t.maghrib) + ')</p>' : '') + q(3) + q(4) +
+    '<p class="meta">هذا في النوافل المطلقة. أما الفرائض والمقضية فتُصلّى في أي وقت، ولبعض النوافل ذوات الأسباب تفصيل عند العلماء. والأوقات المعروضة تقديرية بحسب الحساب الفلكي، فاحتط بدقائق.</p></div></div>';
+  return { title: 'صلاة الضحى', back: 'more', html: h };
+}
 function viewWird() {
   var s = S.set, w = s.wird, tt = todayTimes(), tz = tt.tz, dn = S.wd[tt.key] || {}, slots = wirdSlots(w, tt.t), per = Math.max(1, +w.pages || 1), tot = wirdTotal(w), pos = Math.min(604, Math.max(1, +S.wpos || 1)), done = 0;
   slots.forEach(function (x, i) { if (dn[i]) done++; });
@@ -2756,7 +2948,7 @@ function viewFast() {
     var ms = now + d * FDAY, fi = fastInfo(ms, tz);
     if (fi && FLAB[fi.kind]) up.push('<div class="frow"><span>' + flab(fi) + '<br><span class="meta">' + esc(hijriStr(ms, tz)) + '</span></span><span class="meta">' + esc(dfm ? dfm.format(new Date(ms)) : '') + '</span></div>');
   }
-  h += '<div class="card stack"><b>الأيام القادمة</b><div class="times">' + up.join('') + '</div>' + shBtn('data-act="fastsched"', 'مشاركة جدول الأيام القادمة') + '</div>';
+  h += '<div class="card stack"><b>الأيام القادمة</b><div class="times">' + up.join('') + '</div>' + shBtn('data-act="fastsched"', 'مشاركة جدول الأيام القادمة', 1) + '</div>';
   h += '<div class="card stack"><b>التذكير</b>' + sw('الاثنين', 'fast.mon', f.mon) + sw('الخميس', 'fast.thu', f.thu) + sw('الأيام البيض (١٣ و١٤ و١٥)', 'fast.white', f.white) + sw('عاشوراء وعرفة وست شوال', 'fast.extra', f.extra) +
     sw('تذكير في الليلة السابقة', 'fast.eve', f.eve) + sw('تذكير بالسحور', 'fast.sahurOn', f.sahurOn) + num('قبل الفجر بكم دقيقة', 'fast.sahur', f.sahur, 5, 240) +
     '<label class="fld">تعديل التاريخ الهجري<select data-path="fast.adj" data-num="1"><option value="-1"' + (f.adj === -1 ? ' selected' : '') + '>يوم أقل</option><option value="0"' + (f.adj === 0 ? ' selected' : '') + '>كما في التقويم (أم القرى)</option><option value="1"' + (f.adj === 1 ? ' selected' : '') + '>يوم أكثر</option></select></label>' +
@@ -2837,6 +3029,48 @@ function viewHadith() {
     '<p class="meta">ترقيم البخاري على طبعة فتح الباري، وترقيم مسلم على طبعة محمد فؤاد عبد الباقي.</p></div>' };
 }
 
+/* ---------- سنن الصلاة والسنن المهجورة (من الصحيحين، مرقّمة) ---------- */
+var SSD = {"s":[{"i":"musi","t":"الأصل الجامع","k":"أصل","g":"أ","n":"عَنْ مَالِكِ بْنِ الْحُوَيْرِثِ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":631,"m":null,"lf":"","x":"صَلُّوا كَمَا رَأَيْتُمُونِي أُصَلِّي","h":"أصلٌ جامع: كل ما صحّ من صفة صلاته ﷺ فالسنّة أن نقتدي به فيه. وفيما يلي السنن الثابتة مرتّبةً من أول الصلاة إلى ما بعد السلام.","w":""},{"i":"saf","t":"تسوية الصفوف","k":"فعلية","g":"أ","n":"عَنْ أَنَسِ بْنِ مَالِكٍ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":723,"m":433,"lf":"M","x":"سَوُّوا صُفُوفَكُمْ فَإِنَّ تَسْوِيَةَ الصَّفِّ مِنْ تَمَامِ الصَّلاَةِ","h":"قبل التكبير: سوّوا الصف وسدّوا الفُرَج، بحيث يقف المصلّون متحاذين متراصّين لا يتقدّم أحدٌ على أحد. وكان الصحابة يُلزق أحدهم منكبه بمنكب صاحبه وقدمه بقدمه (البخاري ٧٢٥)، بلا أذى ولا مزاحمة.","w":"تسوية الصف: تعديله وإزالة الاعوجاج منه. تمام الصلاة: كمالها."},{"i":"raf","t":"رفع اليدين","k":"فعلية","g":"ب","n":"عَنِ ابْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا","q":0,"c":"","b":735,"m":390,"lf":"B","x":"أَنَّ رَسُولَ اللَّهِ ﷺ كَانَ يَرْفَعُ يَدَيْهِ حَذْوَ مَنْكِبَيْهِ إِذَا افْتَتَحَ الصَّلاَةَ، وَإِذَا كَبَّرَ لِلرُّكُوعِ، وَإِذَا رَفَعَ رَأْسَهُ مِنَ الرُّكُوعِ رَفَعَهُمَا كَذَلِكَ أَيْضًا وَقَالَ “سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ، رَبَّنَا وَلَكَ الْحَمْدُ”","h":"ترفع كفّيك مع تكبيرة الإحرام إلى مقابل منكبيك، وكذلك عند التكبير للركوع وعند الرفع منه، وعند القيام من التشهد الأول (البخاري ٧٣٩). ولا ترفعهما في السجود.","w":"حَذْو المنكبين: مقابلهما. المَنكِب: ملتقى عظم العضد بالكتف."},{"i":"wad","t":"وضع اليد اليمنى على اليسرى","k":"فعلية","g":"ب","n":"عَنْ سَهْلِ بْنِ سَعْدٍ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"","b":740,"m":401,"lf":"B","x":"كَانَ النَّاسُ يُؤْمَرُونَ أَنْ يَضَعَ الرَّجُلُ الْيَدَ الْيُمْنَى عَلَى ذِرَاعِهِ الْيُسْرَى فِي الصَّلاَةِ","h":"بعد التكبير تضع كفّك اليمنى على ذراعك اليسرى وأنت واقف، وتجعلهما على صدرك عند كثير من أهل العلم.","w":"الذِّراع: من المرفق إلى أطراف الأصابع. يُؤمَرون: يأمرهم النبي ﷺ."},{"i":"ist","t":"دعاء الاستفتاح","k":"قولية","g":"ب","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"","b":744,"m":598,"lf":"B","x":"فَقُلْتُ بِأَبِي وَأُمِّي يَا رَسُولَ اللَّهِ، إِسْكَاتُكَ بَيْنَ التَّكْبِيرِ وَالْقِرَاءَةِ مَا تَقُولُ قَالَ “أَقُولُ اللَّهُمَّ بَاعِدْ بَيْنِي وَبَيْنَ خَطَايَايَ كَمَا بَاعَدْتَ بَيْنَ الْمَشْرِقِ وَالْمَغْرِبِ، اللَّهُمَّ نَقِّنِي مِنَ الْخَطَايَا كَمَا يُنَقَّى الثَّوْبُ الأَبْيَضُ مِنَ الدَّنَسِ، اللَّهُمَّ اغْسِلْ خَطَايَايَ بِالْمَاءِ وَالثَّلْجِ وَالْبَرَدِ”","h":"بعد تكبيرة الإحرام وقبل قراءة الفاتحة تسكت سكتةً يسيرة وتقول هذا الدعاء سرّاً (ويجوز غيره من الاستفتاحات الثابتة).","w":"باعِد: فرِّق وأبعِد. الخطايا: الذنوب. نقِّني: طهِّرني. الدَّنَس: الوسخ. البَرَد: حبّ الغمام، أي قطع الجليد."},{"i":"amn","t":"التأمين","k":"قولية","g":"ب","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":780,"m":410,"lf":"B","x":"إِذَا أَمَّنَ الإِمَامُ فَأَمِّنُوا فَإِنَّهُ مَنْ وَافَقَ تَأْمِينُهُ تَأْمِينَ الْمَلاَئِكَةِ غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ","h":"إذا فرغتَ من «ولا الضالين» قلتَ: «آمين»، والمأموم يقولها مع تأمين الإمام لا قبله.","w":"آمين: اللهم استجب. وافق: وقع تأمينه مع تأمين الملائكة."},{"i":"ruk","t":"التسبيح في الركوع والسجود","k":"قولية","g":"ج","n":"عَنْ حُذَيْفَةَ بْنِ الْيَمَانِ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"في وصف صلاته ﷺ بالليل","b":null,"m":772,"lf":"","x":"ثُمَّ رَكَعَ فَجَعَلَ يَقُولُ “سُبْحَانَ رَبِّيَ الْعَظِيمِ”. فَكَانَ رُكُوعُهُ نَحْوًا مِنْ قِيَامِهِ ثُمَّ قَالَ “سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ”. ثُمَّ قَامَ طَوِيلاً قَرِيبًا مِمَّا رَكَعَ ثُمَّ سَجَدَ فَقَالَ “سُبْحَانَ رَبِّيَ الأَعْلَى”","h":"في الركوع تقول: «سبحان ربي العظيم»، وفي السجود: «سبحان ربي الأعلى».","w":"سبحان: تنزيهٌ لله عن كل نقص. العظيم: صاحب العظمة كلها. الأعلى: العالي فوق خلقه بذاته وقدره."},{"i":"ruk2","t":"ذكر آخر في الركوع والسجود","k":"قولية","g":"ج","n":"عَنْ عَائِشَةَ رَضِيَ اللَّهُ عَنْهَا","q":0,"c":"","b":794,"m":484,"lf":"B","x":"كَانَ النَّبِيُّ ﷺ يَقُولُ فِي رُكُوعِهِ وَسُجُودِهِ “سُبْحَانَكَ اللَّهُمَّ رَبَّنَا وَبِحَمْدِكَ، اللَّهُمَّ اغْفِرْ لِي”","h":"ويجوز أن تقول في الركوع والسجود: «سبحانك اللهم ربنا وبحمدك، اللهم اغفر لي»، فتنوّع بينه وبين «سبحان ربي العظيم».","w":"بحمدك: أسبّحك متلبّساً بحمدك. اغفر لي: استر ذنبي وتجاوز عنه."},{"i":"rafruk","t":"الذكر عند الرفع من الركوع","k":"قولية","g":"ج","n":"عَنْ رِفَاعَةَ بْنِ رَافِعٍ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"كنا نصلي وراء النبي ﷺ، فلما رفع رأسه من الركعة قال: «سمع الله لمن حمده»","b":799,"m":null,"lf":"","x":"قَالَ رَجُلٌ وَرَاءَهُ رَبَّنَا وَلَكَ الْحَمْدُ، حَمْدًا كَثِيرًا طَيِّبًا مُبَارَكًا فِيهِ، فَلَمَّا انْصَرَفَ قَالَ “مَنِ الْمُتَكَلِّمُ”. قَالَ أَنَا. قَالَ “رَأَيْتُ بِضْعَةً وَثَلاَثِينَ مَلَكًا يَبْتَدِرُونَهَا، أَيُّهُمْ يَكْتُبُهَا أَوَّلُ”","h":"عند الرفع من الركوع يقول الإمام والمنفرد: «سمع الله لمن حمده»، ثم يقول الجميع: «ربنا ولك الحمد»، ويجوز أن تزيد: «حمداً كثيراً طيباً مباركاً فيه».","w":"بِضعة وثلاثين: ما بين ٣٣ و٣٩. يبتدرونها: يتسابقون إليها. سمع الله لمن حمده: استجاب لمن حمده."},{"i":"sjd","t":"السجود على الأعضاء السبعة","k":"فعلية","g":"د","n":"عَنِ ابْنِ عَبَّاسٍ رَضِيَ اللَّهُ عَنْهُمَا","q":1,"c":"","b":812,"m":490,"lf":"B","x":"أُمِرْتُ أَنْ أَسْجُدَ عَلَى سَبْعَةِ أَعْظُمٍ عَلَى الْجَبْهَةِ — وَأَشَارَ بِيَدِهِ عَلَى أَنْفِهِ — وَالْيَدَيْنِ، وَالرُّكْبَتَيْنِ وَأَطْرَافِ الْقَدَمَيْنِ","h":"عند السجود تمكّن من الأرض: جبهتك مع أنفك، وكفّيك، وركبتيك، وأطراف قدميك (أي أصابعهما).","w":"أعظُم: أعضاء. أُمرتُ: أمره الله تعالى بذلك."},{"i":"sjd2","t":"الدعاء في السجود","k":"قولية","g":"د","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":null,"m":482,"lf":"","x":"أَقْرَبُ مَا يَكُونُ الْعَبْدُ مِنْ رَبِّهِ وَهُوَ سَاجِدٌ فَأَكْثِرُوا الدُّعَاءَ","h":"اجعل السجود وقتَ دعاء: بعد التسبيح ادعُ بما شئت من خير الدنيا والآخرة.","w":"أقرب ما يكون: أقرب أحواله إلى رحمة ربه وإجابته."},{"i":"tsh","t":"التشهد","k":"قولية","g":"هـ","n":"عَنْ عَبْدِ اللَّهِ بْنِ مَسْعُودٍ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"لمّا كانوا يقولون في الصلاة: السلام على جبريل وميكائيل، علّمهم النبي ﷺ","b":831,"m":402,"lf":"B","x":"إِنَّ اللَّهَ هُوَ السَّلاَمُ، فَإِذَا صَلَّى أَحَدُكُمْ فَلْيَقُلِ التَّحِيَّاتُ لِلَّهِ، وَالصَّلَوَاتُ وَالطَّيِّبَاتُ، السَّلاَمُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ، السَّلاَمُ عَلَيْنَا وَعَلَى عِبَادِ اللَّهِ الصَّالِحِينَ. فَإِنَّكُمْ إِذَا قُلْتُمُوهَا أَصَابَتْ كُلَّ عَبْدٍ لِلَّهِ صَالِحٍ فِي السَّمَاءِ وَالأَرْضِ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ اللَّهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ","h":"في الجلوس للتشهد تقول هذا التشهد، وفي التشهد الأخير تُتبعه بالصلاة على النبي ﷺ ثم الاستعاذة ثم الدعاء.","w":"التحيات: كل أنواع التعظيم لله وحده. الصلوات: العبادات والأدعية. الطيبات: الأقوال والأعمال الطيبة. السلام عليك: دعاء له بالسلامة والرحمة."},{"i":"sal","t":"الصلاة الإبراهيمية","k":"قولية","g":"هـ","n":"عَنْ كَعْبِ بْنِ عُجْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"لمّا سألوه: كيف نصلّي عليك؟","b":4797,"m":406,"lf":"B","x":"قُولُوا اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ، اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ","h":"في التشهد الأخير، بعد «التحيات» وقبل السلام، تصلّي على النبي ﷺ بهذه الصيغة.","w":"صلِّ على محمد: أثنِ عليه عند الملائكة وارفع ذكره. بارك: أدِم له الخير وكثّره. حميد: محمود. مجيد: عظيم الشأن."},{"i":"aud","t":"الاستعاذة من أربع قبل السلام","k":"قولية","g":"هـ","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":null,"m":588,"lf":"","x":"إِذَا تَشَهَّدَ أَحَدُكُمْ فَلْيَسْتَعِذْ بِاللَّهِ مِنْ أَرْبَعٍ يَقُولُ اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ جَهَنَّمَ وَمِنْ عَذَابِ الْقَبْرِ وَمِنْ فِتْنَةِ الْمَحْيَا وَالْمَمَاتِ وَمِنْ شَرِّ فِتْنَةِ الْمَسِيحِ الدَّجَّالِ","h":"بعد الصلاة الإبراهيمية وقبل السلام تستعيذ بالله من هذه الأربع، ثم تدعو بما شئت.","w":"فتنة المحيا: امتحانات الحياة من شهوات وشبهات. فتنة الممات: ما يعرض للإنسان عند الموت وفي القبر. المسيح الدجال: الكذّاب الأعور الذي يخرج آخر الزمان."},{"i":"sal2","t":"التسليم","k":"فعلية","g":"هـ","n":"عَنْ سَعْدِ بْنِ أَبِي وَقَّاصٍ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"","b":null,"m":582,"lf":"","x":"كُنْتُ أَرَى رَسُولَ اللَّهِ ﷺ يُسَلِّمُ عَنْ يَمِينِهِ وَعَنْ يَسَارِهِ حَتَّى أَرَى بَيَاضَ خَدِّهِ","h":"تلتفت عن يمينك ثم عن يسارك قائلاً في كل مرة: «السلام عليكم ورحمة الله»، التفاتاً بيّناً.","w":"بياض خدّه: صفحة وجهه، أي يلتفت التفاتاً ظاهراً."},{"i":"after1","t":"الاستغفار بعد السلام","k":"قولية","g":"و","n":"عَنْ ثَوْبَانَ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"","b":null,"m":591,"lf":"","x":"كَانَ رَسُولُ اللَّهِ ﷺ إِذَا انْصَرَفَ مِنْ صَلاَتِهِ اسْتَغْفَرَ ثَلاَثًا وَقَالَ “اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ تَبَارَكْتَ ذَا الْجَلاَلِ وَالإِكْرَامِ”","h":"بعد التسليم من الفريضة: قل «أستغفر الله» ثلاثاً، ثم «اللهم أنت السلام ومنك السلام، تباركت ذا الجلال والإكرام».","w":"تباركت: تعاظمتَ وكثر خيرك. ذا الجلال والإكرام: صاحب العظمة والفضل."},{"i":"after2","t":"التسبيح والتحميد والتكبير بعد الصلاة","k":"قولية","g":"و","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":null,"m":597,"lf":"","x":"مَنْ سَبَّحَ اللَّهَ فِي دُبُرِ كُلِّ صَلاَةٍ ثَلاَثًا وَثَلاَثِينَ وَحَمِدَ اللَّهَ ثَلاَثًا وَثَلاَثِينَ وَكَبَّرَ اللَّهَ ثَلاَثًا وَثَلاَثِينَ فَتِلْكَ تِسْعَةٌ وَتِسْعُونَ وَقَالَ تَمَامَ الْمِائَةِ لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ غُفِرَتْ خَطَايَاهُ وَإِنْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ","h":"بعد كل فريضة: سبّح الله ٣٣، واحمده ٣٣، وكبّره ٣٣، ثم أتمّ المئة بقول: «لا إله إلا الله وحده لا شريك له…».","w":"دُبُر الصلاة: عقبها بعد السلام. زَبَد البحر: رغوته، كناية عن كثرة الذنوب."}],"m":[{"i":"siw","t":"السواك","k":"","g":"ص","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":887,"m":252,"lf":"B","x":"لَوْلاَ أَنْ أَشُقَّ عَلَى أُمَّتِي — أَوْ عَلَى النَّاسِ — لأَمَرْتُهُمْ بِالسِّوَاكِ مَعَ كُلِّ صَلاَةٍ","h":"استعمل السواك (ويحصل أصل السنّة بفرشاة الأسنان) عند الوضوء وعند كل صلاة. وكان ﷺ إذا قام من الليل يشوص فاه بالسواك (البخاري ٢٤٥).","w":"أَشُقّ: أُثقِل وأُلزِم بما فيه مشقة. السواك: عود الأراك ونحوه يُدلَك به الفم والأسنان. يَشُوص: يدلك."},{"i":"tah","t":"تحية المسجد","k":"","g":"ص","n":"عَنْ أَبِي قَتَادَةَ السَّلَمِيِّ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":444,"m":714,"lf":"B","x":"إِذَا دَخَلَ أَحَدُكُمُ الْمَسْجِدَ فَلْيَرْكَعْ رَكْعَتَيْنِ قَبْلَ أَنْ يَجْلِسَ","h":"إذا دخلت المسجد فصلِّ ركعتين خفيفتين قبل أن تجلس. فإن دخلتَ والصلاة تُقام فادخل مع الجماعة.","w":"تحية المسجد: ركعتان إكراماً للمسجد."},{"i":"adh","t":"الصلاة بين الأذان والإقامة","k":"","g":"ص","n":"عَنْ عَبْدِ اللَّهِ بْنِ مُغَفَّلٍ الْمُزَنِيِّ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":624,"m":838,"lf":"B","x":"بَيْنَ كُلِّ أَذَانَيْنِ صَلاَةٌ — ثَلاَثًا — لِمَنْ شَاءَ","h":"بين الأذان والإقامة صلِّ ما تيسّر من النافلة، وهي سنّة لمن شاء وليست واجبة.","w":"أذانين: الأذان والإقامة. لمن شاء: سنّة مستحبة وليست فرضاً."},{"i":"muz","t":"متابعة المؤذن","k":"","g":"ص","n":"عَنْ أَبِي سَعِيدٍ الْخُدْرِيِّ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":611,"m":383,"lf":"B","x":"إِذَا سَمِعْتُمُ النِّدَاءَ فَقُولُوا مِثْلَ مَا يَقُولُ الْمُؤَذِّنُ","h":"قل مثل ما يقول المؤذن جملةً بجملة، إلا عند «حيّ على الصلاة، حيّ على الفلاح» فقل: «لا حول ولا قوة إلا بالله» (البخاري ٦١٣، مسلم ٣٨٥).","w":"حيَّ على الصلاة: هلمّوا إليها. لا حول ولا قوة إلا بالله: لا تحوّل من حال إلى حال ولا قدرة إلا بعون الله."},{"i":"dua","t":"الدعاء بعد الأذان","k":"","g":"ص","n":"عَنْ جَابِرِ بْنِ عَبْدِ اللَّهِ رَضِيَ اللَّهُ عَنْهُمَا","q":1,"c":"","b":614,"m":null,"lf":"","x":"مَنْ قَالَ حِينَ يَسْمَعُ النِّدَاءَ اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ وَالصَّلاَةِ الْقَائِمَةِ آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ، حَلَّتْ لَهُ شَفَاعَتِي يَوْمَ الْقِيَامَةِ","h":"بعد انتهاء الأذان صلِّ على النبي ﷺ (مسلم ٣٨٤)، ثم قل هذا الدعاء.","w":"الدعوة التامة: دعوة التوحيد (الأذان). الصلاة القائمة: التي ستُقام. الوسيلة: منزلة عالية في الجنة. الفضيلة: مرتبة فوق سائر الخلق. المقام المحمود: مقام الشفاعة يوم القيامة. حلّت له: وجبت له."},{"i":"rat","t":"السنن الرواتب","k":"","g":"ص","n":"عَنْ أُمِّ حَبِيبَةَ رَضِيَ اللَّهُ عَنْهَا","q":1,"c":"","b":null,"m":728,"lf":"","x":"مَا مِنْ عَبْدٍ مُسْلِمٍ يُصَلِّي لِلَّهِ كُلَّ يَوْمٍ ثِنْتَيْ عَشْرَةَ رَكْعَةً تَطَوُّعًا غَيْرَ فَرِيضَةٍ إِلاَّ بَنَى اللَّهُ لَهُ بَيْتًا فِي الْجَنَّةِ","h":"حافظ على اثنتي عشرة ركعة يومياً غير الفرائض: أربع قبل الظهر، وركعتان بعدها، وركعتان بعد المغرب، وركعتان بعد العشاء، وركعتان قبل الفجر (هذا التفصيل في رواية الترمذي وصححها الألباني).","w":"تطوّعاً: نافلةً لا فرضاً. بنى الله له بيتاً: ثوابٌ عظيم في الجنة."},{"i":"idt","t":"الاضطجاع بعد سنة الفجر","k":"","g":"ص","n":"عَنْ عَائِشَةَ رَضِيَ اللَّهُ عَنْهَا","q":0,"c":"","b":1160,"m":736,"lf":"B","x":"كَانَ النَّبِيُّ ﷺ إِذَا صَلَّى رَكْعَتَيِ الْفَجْرِ اضْطَجَعَ عَلَى شِقِّهِ الأَيْمَنِ","h":"بعد أن تصلي سنة الفجر (ركعتين خفيفتين) اضطجع قليلاً على جنبك الأيمن في بيتك، ثم قم للفريضة.","w":"شِقّه الأيمن: جنبه الأيمن."},{"i":"bayt","t":"النافلة في البيت","k":"","g":"ص","n":"عَنْ زَيْدِ بْنِ ثَابِتٍ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":731,"m":781,"lf":"B","x":"فَصَلُّوا أَيُّهَا النَّاسُ فِي بُيُوتِكُمْ، فَإِنَّ أَفْضَلَ الصَّلاَةِ صَلاَةُ الْمَرْءِ فِي بَيْتِهِ إِلاَّ الْمَكْتُوبَةَ","h":"اجعل نوافلك (الرواتب وقيام الليل والضحى) في بيتك؛ ففيه بركة، وهو أفضل من المسجد. أما الفريضة فتُصلّى في المسجد.","w":"المكتوبة: الفريضة. صلاة المرء في بيته: نافلته."},{"i":"wsy","t":"وصية النبي ﷺ لأبي هريرة","k":"","g":"ص","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"","b":1981,"m":721,"lf":"B","x":"أَوْصَانِي خَلِيلِي ﷺ بِثَلاَثٍ صِيَامِ ثَلاَثَةِ أَيَّامٍ مِنْ كُلِّ شَهْرٍ، وَرَكْعَتَيِ الضُّحَى، وَأَنْ أُوتِرَ قَبْلَ أَنْ أَنَامَ","h":"ثلاث وصايا يغفل عنها كثيرون: صيام ثلاثة أيام من كل شهر (ومن أفضلها الأيام البيض: ١٣ و١٤ و١٥)، وركعتا الضحى، والوتر قبل النوم (وخاصةً لمن لا يثق بالقيام آخر الليل).","w":"خليلي: صديقي المحبّ الخالص. أُوتِر: أصلّي الوتر، وهو صلاة بعد العشاء بعدد فردي."},{"i":"wud","t":"ركعتا الوضوء","k":"","g":"ص","n":"عَنْ عُثْمَانَ بْنِ عَفَّانَ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"توضأ عثمان وضوء النبي ﷺ ثم قال: قال رسول الله ﷺ","b":159,"m":226,"lf":"B","x":"مَنْ تَوَضَّأَ نَحْوَ وُضُوئِي هَذَا، ثُمَّ صَلَّى رَكْعَتَيْنِ، لاَ يُحَدِّثُ فِيهِمَا نَفْسَهُ، غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ","h":"بعد كل وضوء صلِّ ركعتين بخشوع، دون أن تنشغل بأمور الدنيا.","w":"نحو وضوئي: مثل وضوئي. لا يحدّث فيهما نفسه: لا يُشغل قلبه بالدنيا باختياره، فإن غلبه الخاطر عُفي عنه."},{"i":"jum","t":"التبكير إلى الجمعة","k":"","g":"ص","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":881,"m":850,"lf":"B","x":"مَنِ اغْتَسَلَ يَوْمَ الْجُمُعَةِ غُسْلَ الْجَنَابَةِ ثُمَّ رَاحَ فَكَأَنَّمَا قَرَّبَ بَدَنَةً، وَمَنْ رَاحَ فِي السَّاعَةِ الثَّانِيَةِ فَكَأَنَّمَا قَرَّبَ بَقَرَةً، وَمَنْ رَاحَ فِي السَّاعَةِ الثَّالِثَةِ فَكَأَنَّمَا قَرَّبَ كَبْشًا أَقْرَنَ، وَمَنْ رَاحَ فِي السَّاعَةِ الرَّابِعَةِ فَكَأَنَّمَا قَرَّبَ دَجَاجَةً، وَمَنْ رَاحَ فِي السَّاعَةِ الْخَامِسَةِ فَكَأَنَّمَا قَرَّبَ بَيْضَةً","h":"يوم الجمعة اغتسل وبكّر إلى المسجد، فكلما كان تبكيرك أبكر كان أجرك أعظم.","w":"غسل الجنابة: غسلاً كغسل الجنابة. راح: ذهب إلى الجمعة. قرّب: تصدّق متقرّباً إلى الله. البَدَنة: الناقة. أقرن: له قرنان وهو أكمل."},{"i":"salam","t":"إفشاء السلام","k":"","g":"ح","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":null,"m":54,"lf":"","x":"لاَ تَدْخُلُونَ الْجَنَّةَ حَتَّى تُؤْمِنُوا وَلاَ تُؤْمِنُوا حَتَّى تَحَابُّوا. أَوَلاَ أَدُلُّكُمْ عَلَى شَيْءٍ إِذَا فَعَلْتُمُوهُ تَحَابَبْتُمْ أَفْشُوا السَّلاَمَ بَيْنَكُمْ","h":"ابدأ بالسلام على من تعرف ومن لا تعرف، وردَّ السلام؛ فهو سبب للمحبة بين الناس.","w":"تحابُّوا: يحبّ بعضكم بعضاً. أفشوا السلام: أظهروه وأكثروا منه."},{"i":"ata","t":"تشميت العاطس","k":"","g":"ح","n":"عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":6224,"m":null,"lf":"","x":"إِذَا عَطَسَ أَحَدُكُمْ فَلْيَقُلِ الْحَمْدُ لِلَّهِ. وَلْيَقُلْ لَهُ أَخُوهُ أَوْ صَاحِبُهُ يَرْحَمُكَ اللَّهُ. فَإِذَا قَالَ لَهُ يَرْحَمُكَ اللَّهُ. فَلْيَقُلْ يَهْدِيكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمْ","h":"إذا عطستَ فقل: «الحمد لله»، فيقول لك من سمعك: «يرحمك الله»، فتردّ عليه: «يهديكم الله ويصلح بالكم». ويكون التشميت لمن حمد الله (البخاري ٦٢٢١).","w":"بالكم: حالكم وشأنكم. التشميت: الدعاء للعاطس بـ «يرحمك الله»."},{"i":"akl","t":"التسمية واليمين عند الأكل","k":"","g":"ح","n":"عَنْ عُمَرَ بْنِ أَبِي سَلَمَةَ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"كنت غلاماً في حجر رسول الله ﷺ وكانت يدي تطيش في الصحفة، فقال لي رسول الله ﷺ:","b":5376,"m":2022,"lf":"B","x":"يَا غُلاَمُ سَمِّ اللَّهَ، وَكُلْ بِيَمِينِكَ وَكُلْ مِمَّا يَلِيكَ","h":"عند الأكل: سمِّ الله، وكل بيمينك، وكل مما يليك ولا تمدّ يدك إلى ما أمام غيرك.","w":"غلام: صبيّ. تَطيش: تتحرك في أنحاء الإناء. الصَّحفة: وعاء كبير للطعام."},{"i":"laq","t":"لعق الأصابع","k":"","g":"ح","n":"عَنِ ابْنِ عَبَّاسٍ رَضِيَ اللَّهُ عَنْهُمَا","q":1,"c":"","b":5456,"m":2031,"lf":"M","x":"إِذَا أَكَلَ أَحَدُكُمْ طَعَامًا فَلاَ يَمْسَحْ يَدَهُ حَتَّى يَلْعَقَهَا أَوْ يُلْعِقَهَا","h":"بعد الأكل لا تمسح يدك ولا تغسلها حتى تلحس أصابعك (أو يلحسها غيرك ممن لا يتقذّر كزوجتك وأولادك)، ثم اغسلها.","w":"يَلعَقها: يلحسها بنفسه. يُلعِقها: يجعل غيره يلحسها."},{"i":"tay","t":"البدء باليمين","k":"","g":"ح","n":"عَنْ عَائِشَةَ رَضِيَ اللَّهُ عَنْهَا","q":0,"c":"","b":168,"m":268,"lf":"B","x":"كَانَ النَّبِيُّ ﷺ يُعْجِبُهُ التَّيَمُّنُ فِي تَنَعُّلِهِ وَتَرَجُّلِهِ وَطُهُورِهِ وَفِي شَأْنِهِ كُلِّهِ","h":"ابدأ باليمين في لبس النعلين والثياب، وتسريح الشعر، والوضوء، والأكل والشرب، وفي كل ما فيه تكريم؛ وبالشمال في ضدّ ذلك كالخلع.","w":"التيمّن: البدء باليمين. تنعّله: لبس نعليه. ترجّله: تسريح شعره. طُهوره: وضوءه وغسله."},{"i":"khl","t":"دعاء دخول الخلاء","k":"","g":"ح","n":"عَنْ أَنَسِ بْنِ مَالِكٍ رَضِيَ اللَّهُ عَنْهُ","q":0,"c":"","b":142,"m":375,"lf":"B","x":"كَانَ النَّبِيُّ ﷺ إِذَا دَخَلَ الْخَلاَءَ قَالَ “اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ”","h":"قل هذا الدعاء عند إرادة دخول الخلاء (دورة المياه).","w":"الخلاء: مكان قضاء الحاجة. الخُبُث: ذكور الشياطين. الخبائث: إناثهم."},{"i":"dar","t":"ذكر الله عند دخول البيت","k":"","g":"ح","n":"عَنْ جَابِرِ بْنِ عَبْدِ اللَّهِ رَضِيَ اللَّهُ عَنْهُمَا","q":1,"c":"","b":null,"m":2018,"lf":"","x":"إِذَا دَخَلَ الرَّجُلُ بَيْتَهُ فَذَكَرَ اللَّهَ عِنْدَ دُخُولِهِ وَعِنْدَ طَعَامِهِ قَالَ الشَّيْطَانُ لاَ مَبِيتَ لَكُمْ وَلاَ عَشَاءَ","h":"إذا دخلت بيتك فاذكر الله (قل «بسم الله»)، وسمِّ عند الطعام؛ فيُحرَم الشيطان المبيتَ والعَشاء في بيتك.","w":"لا مبيت لكم: لا مكان تبيتون فيه. ولا عَشاء: ولا طعام تتعشّون به."},{"i":"nawm","t":"الوضوء والدعاء عند النوم","k":"","g":"ح","n":"عَنِ الْبَرَاءِ بْنِ عَازِبٍ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":247,"m":2710,"lf":"B","x":"إِذَا أَتَيْتَ مَضْجَعَكَ فَتَوَضَّأْ وُضُوءَكَ لِلصَّلاَةِ، ثُمَّ اضْطَجِعْ عَلَى شِقِّكَ الأَيْمَنِ، ثُمَّ قُلِ اللَّهُمَّ أَسْلَمْتُ وَجْهِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لاَ مَلْجَأَ وَلاَ مَنْجَا مِنْكَ إِلاَّ إِلَيْكَ، اللَّهُمَّ آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ، وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ. فَإِنْ مُتَّ مِنْ لَيْلَتِكَ فَأَنْتَ عَلَى الْفِطْرَةِ، وَاجْعَلْهُنَّ آخِرَ مَا تَتَكَلَّمُ بِهِ","h":"قبل النوم: توضأ، ثم اضطجع على جنبك الأيمن، وقل هذا الدعاء، واجعله آخر كلامك.","w":"أسلمتُ وجهي: انقدتُ وخضعتُ لك. فوّضتُ أمري: رددتُه إليك وتوكلتُ عليك. ألجأتُ ظهري: اعتمدتُ واستندتُ إليك. رغبةً ورهبةً: طمعاً في ثوابك وخوفاً من عقابك. لا ملجأ ولا منجا: لا مفرّ ولا نجاة. الفطرة: دين الإسلام."},{"i":"gat","t":"تغطية الإناء وإغلاق الباب وإطفاء السراج","k":"","g":"ح","n":"عَنْ جَابِرِ بْنِ عَبْدِ اللَّهِ رَضِيَ اللَّهُ عَنْهُمَا","q":1,"c":"","b":null,"m":2012,"lf":"","x":"غَطُّوا الإِنَاءَ وَأَوْكُوا السِّقَاءَ وَأَغْلِقُوا الْبَابَ وَأَطْفِئُوا السِّرَاجَ فَإِنَّ الشَّيْطَانَ لاَ يَحُلُّ سِقَاءً وَلاَ يَفْتَحُ بَابًا وَلاَ يَكْشِفُ إِنَاءً","h":"عند النوم: غطِّ الأواني، واربط أفواه القِرَب، وأغلق الأبواب، وأطفئ المصابيح (خشية الحريق).","w":"أَوكُوا السِّقاء: شُدّوا فم القِرْبة بالرباط. السِّراج: المصباح. لا يحلّ سقاءً: لا يفكّ رباطه."},{"i":"suh","t":"السحور","k":"","g":"ح","n":"عَنْ أَنَسِ بْنِ مَالِكٍ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":1923,"m":1095,"lf":"B","x":"تَسَحَّرُوا فَإِنَّ فِي السَّحُورِ بَرَكَةً","h":"تسحّر قبل الفجر ولو بقليل، فهو بركة تعين على الصيام، والأفضل تأخيره إلى قرب الفجر.","w":"السَّحور: ما يؤكل آخر الليل للصيام. البركة: الخير والنفع."},{"i":"fit","t":"تعجيل الفطر","k":"","g":"ح","n":"عَنْ سَهْلِ بْنِ سَعْدٍ رَضِيَ اللَّهُ عَنْهُ","q":1,"c":"","b":1957,"m":1098,"lf":"B","x":"لاَ يَزَالُ النَّاسُ بِخَيْرٍ مَا عَجَّلُوا الْفِطْرَ","h":"أفطر عند تحقق غروب الشمس ولا تؤخّر الفطر؛ فالخير باقٍ في الأمة ما عجّلوا.","w":"عجّلوا الفطر: بادروا بالإفطار عند الغروب."}]};
+var SSG = { s: { 'أ': 'قبل التكبير', 'ب': 'القيام', 'ج': 'الركوع والرفع منه', 'د': 'السجود', 'هـ': 'التشهد والتسليم', 'و': 'بعد السلام' }, m: { 'ص': 'في الصلاة والمسجد', 'ح': 'في الحياة اليومية' } };
+function ssRef(x) {
+  var r = [];
+  if (x.b) r.push('البخاري (' + ar(x.b) + ')');
+  if (x.m) r.push('مسلم (' + ar(x.m) + ')');
+  var t = 'رواه ' + r.join(' و');
+  if (x.b && x.m) t += ' — واللفظ ' + (x.lf === 'M' ? 'لمسلم' : 'للبخاري');
+  return t;
+}
+function ssBody(x) { return (x.q ? 'قال رسول الله ﷺ: ' : '') + '«' + x.x + '»'; }
+function ssCard(x, k, i) {
+  return '<article class="card stack"><div class="sshead"><b>' + esc(x.t) + '</b>' + (x.k ? '<span class="ssk">' + esc(x.k) + '</span>' : '') + '</div>' +
+    '<div class="meta">' + esc(x.n) + (x.c ? ' — ' + esc(x.c) : '') + '</div>' +
+    '<p class="dua" lang="ar">' + esc(ssBody(x)) + '</p><div class="src">' + esc(ssRef(x)) + '</div>' +
+    '<p class="ssh"><b>طريقة التطبيق: </b>' + esc(x.h) + '</p>' + (x.w ? '<p class="ssh ssw"><b>معاني الكلمات: </b>' + esc(x.w) + '</p>' : '') +
+    shBtn('data-act="ssshare" data-k="' + k + '" data-i="' + i + '"') + '</article>';
+}
+function ssShareText(k, i) {
+  var x = SSD[k][i]; if (!x) return '';
+  return x.t + '\n\n' + x.n + '\n' + ssBody(x) + '\n\n' + ssRef(x) + '\n\n' + x.h;
+}
+function viewSsalah() {
+  var h = '<div class="stack"><div class="card stack"><b>سنن الصلاة الثابتة</b><p class="meta">السنن القولية والفعلية من تكبيرة الإحرام إلى ما بعد السلام، كلها من صحيح البخاري ومسلم، مرتبةً بحسب ترتيب الصلاة.</p></div>', last = '';
+  SSD.s.forEach(function (x, i) {
+    if (x.g !== last) { last = x.g; h += '<h3 class="heading ssgh">' + SSG.s[x.g] + '</h3>'; }
+    h += ssCard(x, 's', i);
+  });
+  h += '<p class="meta">ترقيم البخاري على طبعة فتح الباري، وترقيم مسلم على طبعة محمد فؤاد عبد الباقي. الشرح مختصر للتطبيق العملي، وللتفصيل وما فيه خلاف بين العلماء يُرجع إلى أهل العلم.</p></div>';
+  return { title: 'سنن الصلاة الصحيحة', back: 'more', html: h };
+}
+function viewSmahjura(arg) {
+  var f = arg === 'p' || arg === 'l' ? (arg === 'p' ? 'ص' : 'ح') : '';
+  var chips = [['', 'الكل'], ['p', 'في الصلاة والمسجد'], ['l', 'في الحياة اليومية']];
+  var h = '<div class="stack"><div class="card stack"><b>سنن صحيحة يغفل عنها كثير من الناس</b><p class="meta">أحاديث ثابتة في الصحيحين في سنن قلّ من يعمل بها اليوم، في الصلاة وفي الحياة اليومية.</p></div><div class="chips">' +
+    chips.map(function (c) { return '<a class="chip" href="#smahjura' + (c[0] ? '-' + c[0] : '') + '" aria-pressed="' + (c[0] === (f ? arg : '')) + '">' + c[1] + '</a>'; }).join('') + '</div>';
+  SSD.m.forEach(function (x, i) { if (!f || x.g === f) h += ssCard(x, 'm', i); });
+  h += '<p class="meta">ترقيم البخاري على طبعة فتح الباري، وترقيم مسلم على طبعة محمد فؤاد عبد الباقي. الشرح مختصر، وللتفصيل يُرجع إلى أهل العلم.</p></div>';
+  return { title: 'السنن المهجورة الصحيحة', back: 'more', html: h };
+}
+
 /* ---------- الأدعية والرقية والسنن ---------- */
 var D = { tab: 'sunna' };
 function viewDuas() {
@@ -2865,7 +3099,7 @@ function viewHome() {
   var h = '<div class="stack"><div class="hero"><div class="hijri">' + esc(hijriStr(now, tz)) + '</div><div class="greg">' + esc(gregStr(now, tz)) + '</div>' + ORN + '</div>';
   var fq = fastPair(tt), fnote = fq.a && FLAB[fq.a.kind] ? 'اليوم ' + flab(fq.a) : fq.b && FLAB[fq.b.kind] ? 'غدًا ' + flab(fq.b) : '', fk = fq.a && FLAB[fq.a.kind] ? fq.a.kind : fq.b && FLAB[fq.b.kind] ? fq.b.kind : '';
   if (fnote) h += '<div class="card fastcard stack"><a href="#fast" style="color:inherit;text-decoration:none"><div class="label">الصيام</div><b>' + fnote + '</b><p class="meta" style="margin-top:6px;line-height:1.8">' + esc(fadlOf(fk)) + '</p></a>' + shBtn('data-act="fastshare" data-k="' + fk + '" data-w="' + (fq.a && FLAB[fq.a.kind] ? 'a' : 'b') + '"') + '</div>';
-  if (fri) h += '<div class="card" style="background:var(--accent-soft)"><b>يوم الجمعة</b><p class="meta" style="margin-top:4px">اغتسل وبكّر إلى المسجد، واقرأ سورة الكهف، وأكثر من الصلاة على النبي ﷺ، وتحرَّ ساعة الإجابة.</p></div>';
+  if (fri) h += '<div class="card" style="background:var(--accent-soft)"><b>يوم الجمعة</b><p class="meta" style="margin-top:4px">اغتسل وبكّر إلى المسجد، واقرأ سورة الكهف، وأكثر من الصلاة على النبي ﷺ، وتحرَّ ساعة الإجابة.</p>' + shBtn('data-act="jmshare"') + '</div>';
   h += '<div class="card next"><div class="label">الصلاة القادمة</div><div class="pname">' + (nx.k === 'dhuhr' && fri ? 'الجمعة' : PNAME[nx.k]) + '</div><div class="tnum">' + RL.fmtTime(nx.at, tz) + (nx.tomorrow ? ' غدًا' : '') + '</div><div class="cd" id="cd" data-k="' + nx.k + (nx.tomorrow ? 't' : '') + '">' + RL.fmtDur(nx.at - now) + '</div></div>';
   h += '<div class="card times" data-hl="' + hl + '">' + PR.map(function (k) { return '<div class="trow' + (k === hl ? ' now' : '') + '" data-k="' + k + '"' + (k === hl ? ' aria-current="true"' : '') + '><span>' + (k === 'dhuhr' && fri ? 'الجمعة' : PNAME[k]) + '</span><span class="tm">' + RL.fmtTime(t[k], tz) + '</span></div>'; }).join('') + '</div>';
   var city = (CITIES.filter(function (c) { return c[0] === S.set.city; })[0] || [0, 'موقع مخصص'])[1], q = qibla(+S.set.lat, +S.set.lng);
@@ -2883,7 +3117,7 @@ function viewHome() {
 }
 function viewAdhkar() {
   return { title: 'الأذكار', back: null, html: '<div class="grid2">' + tile('zk-morning', 'sun', 'أذكار الصباح') + tile('zk-evening', 'moon', 'أذكار المساء') + tile('zk-sleep', 'moon', 'أذكار النوم') + tile('zk-wake', 'sun', 'أذكار الاستيقاظ') + tile('zk-salah', 'mosque', 'أذكار بعد الصلاة') + tile('inprayer', 'rug', 'أذكار في الصلاة') + tile('hisn', 'scroll', 'حصن المسلم', 'كل الأبواب') +
-    tile('sunan', 'scroll', 'السنن اليومية', 'المنزل، الخلاء، المسجد…') + tile('duas', 'dua', 'الأدعية', 'من الكتاب والسنة') + tile('ruqya', 'shield', 'الرقية والتحصين') + tile('hadith', 'book', 'الأحاديث', 'من الصحيحين') + '</div>' };
+    tile('sunan', 'scroll', 'السنن اليومية', 'المنزل، الخلاء، المسجد…') + tile('duas', 'dua', 'الأدعية', 'من الكتاب والسنة') + tile('ruqya', 'shield', 'الرقية والتحصين') + tile('hadith', 'book', 'الأحاديث', 'من الصحيحين') + tile('ssalah', 'rug', 'سنن الصلاة الصحيحة', 'من التكبير إلى التسليم') + tile('smahjura', 'scroll', 'السنن المهجورة', 'سنن يغفل عنها الناس') + '</div>' };
 }
 function viewZk(arg) {
   if (arg === 'evening') return zView('e', 'أذكار المساء', RC.evening);
@@ -2964,13 +3198,18 @@ function viewTawheed(arg) {
 }
 
 function viewMore() {
-  return { title: 'المزيد', back: null, html: '<div class="grid2">' + tile('tasks', 'list', 'أعمالي اليومية') + tile('letter', 'mail', 'رسالة إلى نفسي') + tile('hadith', 'book', 'الأحاديث') + tile('tawheed', 'scroll', 'التوحيد') + tile('waaz', 'heart', 'مواعظ ونصائح') + tile('wird', 'wird', 'ورد القرآن') + tile('fast', 'fast', 'الصيام') + tile('duas', 'dua', 'الأدعية') + tile('ruqya', 'shield', 'الرقية') + tile('remind', 'bell', 'التذكيرات') + tile('prefs', 'sliders', 'الإعدادات') + '</div>' };
+  return { title: 'المزيد', back: null, html: '<div class="grid2">' + tile('tasks', 'list', 'أعمالي اليومية') + tile('letter', 'mail', 'رسالة إلى نفسي') + tile('hadith', 'book', 'الأحاديث') + tile('ssalah', 'rug', 'سنن الصلاة الصحيحة') + tile('smahjura', 'scroll', 'السنن المهجورة') + tile('duha', 'sun', 'صلاة الضحى وأوقات النهي') + tile('tawheed', 'scroll', 'التوحيد') + tile('waaz', 'heart', 'مواعظ ونصائح') + tile('wird', 'wird', 'ورد القرآن') + tile('fast', 'fast', 'الصيام') + tile('duas', 'dua', 'الأدعية') + tile('ruqya', 'shield', 'الرقية') + tile('remind', 'bell', 'التذكيرات') + tile('prefs', 'sliders', 'الإعدادات') + '</div>' };
 }
 
 /* ---------- التذكيرات والإعدادات ---------- */
 function sw(label, path, val) { return '<label class="switch"><span>' + label + '</span><input type="checkbox" data-path="' + path + '"' + (val ? ' checked' : '') + '></label>'; }
 function num(label, path, val, min, max) { return '<label class="fld">' + label + '<input type="number" inputmode="numeric" data-path="' + path + '" data-num="1" step="any" min="' + min + '" max="' + max + '" value="' + val + '"></label>'; }
 function notifState() { if (!('Notification' in window)) return 'هذا المتصفح لا يدعم إشعارات الهاتف.'; var p = Notification.permission; return p === 'granted' ? 'الحالة: مفعّلة، وستصلك التذكيرات في شريط إشعارات الهاتف.' : p === 'denied' ? 'الحالة: محظورة. فعّلها من إعدادات الموقع في المتصفح (القفل بجانب العنوان ثم الأذونات).' : 'الحالة: غير مفعّلة. اضغط «تفعيل» ثم اختر «السماح».'; }
+function remSel(label, path, v) {
+  var o = [[30, 'كل نصف ساعة'], [60, 'كل ساعة'], [120, 'كل ساعتين'], [180, 'كل ٣ ساعات'], [240, 'كل ٤ ساعات'], [360, 'كل ٦ ساعات']];
+  if (!o.some(function (x) { return x[0] === +v; })) { o.push([+v, 'كل ' + ar(+v) + ' دقيقة']); o.sort(function (a, b) { return a[0] - b[0]; }); }
+  return '<label class="fld">' + label + '<select data-path="' + path + '" data-num="1">' + o.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === +v ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label>';
+}
 function viewRemind() {
   var s = S.set, h = '<div class="stack">';
   if (NAT) {
@@ -2989,8 +3228,9 @@ function viewRemind() {
   h += '<div class="card stack">' + sw('تذكير بأذكار الصباح', 'mAdhkar', s.mAdhkar) + num('بعد الفجر بكم دقيقة', 'adk.mOff', s.adk.mOff, 0, 150) +
     sw('تذكير بأذكار المساء', 'eAdhkar', s.eAdhkar) + '<label class="fld">موعد أذكار المساء<select data-path="adk.eMode"><option value="asr"' + (s.adk.eMode !== 'maghrib' ? ' selected' : '') + '>بعد العصر</option><option value="maghrib"' + (s.adk.eMode === 'maghrib' ? ' selected' : '') + '>قبل الغروب</option></select></label>' +
     num('بكم دقيقة (بعد العصر أو قبل الغروب)', 'adk.eOff', s.adk.eOff, 0, 180) + '<p class="meta">وقت أذكار الصباح من الفجر إلى طلوع الشمس، ووقت أذكار المساء من العصر إلى الغروب. يضبط التطبيق الموعد داخل هذا الوقت دائمًا.</p></div>';
-  h += '<div class="card stack">' + sw('تذكير بالصلاة على النبي ﷺ', 'salawat.on', s.salawat.on) + num('كل كم دقيقة', 'salawat.min', s.salawat.min, 5, 720) + '</div>';
-  h += '<div class="card stack">' + sw('تذكير بذكر الله', 'dhikr.on', s.dhikr.on) + num('كل كم دقيقة', 'dhikr.min', s.dhikr.min, 5, 720) + '</div>';
+  h += '<div class="card stack">' + sw('تذكير بالصلاة على النبي ﷺ', 'salawat.on', s.salawat.on) + remSel('التكرار', 'salawat.min', s.salawat.min) + '</div>';
+  h += '<div class="card stack">' + sw('تذكير بذكر الله', 'dhikr.on', s.dhikr.on) + remSel('التكرار', 'dhikr.min', s.dhikr.min) + '</div>';
+  h += '<a class="card" href="#duha" style="display:block;text-decoration:none;color:inherit"><b>تذكير صلاة الضحى</b><p class="meta" style="margin-top:4px">' + (s.duha.on ? 'مفعّل. اضغط لتعديل الموعد' : 'غير مفعّل. اضغط لإعداده، وفيه أوقات النهي') + '</p></a>';
   h += '<a class="card" href="#wird" style="display:block;text-decoration:none;color:inherit"><b>ورد القرآن اليومي</b><p class="meta" style="margin-top:4px">' + (s.wird.on ? 'مفعّل: ' + pagesWord(s.wird.pages) + ' لكل ورد' : 'غير مفعّل. اضغط لإعداده') + '</p></a>';
   h += '<div class="card">' + sw('صوت التنبيه', 'sound', s.sound) + '</div>';
   h += '<div class="card stack"><b>صوت الأذان</b><p class="meta">الصوت الافتراضي نغمة هادئة.</p><div class="row"><button class="btn" data-act="testalert">جرّب الصوت</button></div></div></div>';
@@ -3028,8 +3268,8 @@ function verifyQuran() {
 }
 
 /* ---------- التوجيه والرسم ---------- */
-var VIEWS = { hisn: viewHisn, inprayer: viewInPrayer, home: viewHome, adhkar: viewAdhkar, zk: viewZk, sunan: viewSunan, duas: viewDuas, ruqya: viewRuqya, quran: viewQuran, tasbih: viewTasbih, more: viewMore, tasks: viewTasks, hadith: viewHadith, tawheed: viewTawheed, letter: viewLetter, waaz: viewWaaz, fast: viewFast, wird: viewWird, remind: viewRemind, prefs: viewPrefs, about: viewAbout };
-var TABOF = { hisn: 'adhkar', inprayer: 'adhkar', home: 'home', adhkar: 'adhkar', zk: 'adhkar', sunan: 'adhkar', duas: 'adhkar', ruqya: 'adhkar', quran: 'quran', tasbih: 'tasbih', more: 'more', tasks: 'more', hadith: 'more', tawheed: 'more', letter: 'more', waaz: 'more', fast: 'more', wird: 'more', remind: 'more', prefs: 'more', about: 'more' };
+var VIEWS = { hisn: viewHisn, inprayer: viewInPrayer, home: viewHome, adhkar: viewAdhkar, zk: viewZk, sunan: viewSunan, duas: viewDuas, ruqya: viewRuqya, quran: viewQuran, tasbih: viewTasbih, more: viewMore, tasks: viewTasks, hadith: viewHadith, tawheed: viewTawheed, letter: viewLetter, waaz: viewWaaz, fast: viewFast, wird: viewWird, duha: viewDuha, ssalah: viewSsalah, smahjura: viewSmahjura, remind: viewRemind, prefs: viewPrefs, about: viewAbout };
+var TABOF = { hisn: 'adhkar', inprayer: 'adhkar', home: 'home', adhkar: 'adhkar', zk: 'adhkar', sunan: 'adhkar', duas: 'adhkar', ruqya: 'adhkar', quran: 'quran', tasbih: 'tasbih', more: 'more', tasks: 'more', hadith: 'more', tawheed: 'more', letter: 'more', waaz: 'more', fast: 'more', wird: 'more', duha: 'more', ssalah: 'more', smahjura: 'more', remind: 'more', prefs: 'more', about: 'more' };
 var TABS = [['home', 'الصلاة', 'moon'], ['adhkar', 'الأذكار', 'sun'], ['quran', 'القرآن', 'book'], ['tasbih', 'المسبحة', 'count'], ['more', 'المزيد', 'more']];
 var ROUTE = null;
 function go(h) { h = String(h).replace(/^#/, ''); ROUTE = h; try { history.pushState(null, '', '#' + h); } catch (e) { try { location.hash = '#' + h; } catch (e2) {} } if (!Q.goto) Q.s = 0; render(); }
@@ -3055,12 +3295,16 @@ document.addEventListener('click', function (e) {
 function setPath(path, val) { var p = path.split('.'), o = S.set; for (var i = 0; i < p.length - 1; i++) o = o[p[i]]; o[p[p.length - 1]] = val; }
 document.addEventListener('click', function (e) {
   var el = e.target.closest('[data-act]'); if (!el) return;
+  SHIMG = el.getAttribute('data-img') === '1';
   var a = el.getAttribute('data-act'), d = el.dataset;
   unlockAudio();
   if (a === 'splash') { $('#splash').hidden = true; return; }
   if (a === 'themecycle') { S.set.theme = S.set.theme === 'dark' ? 'light' : 'dark'; applyTheme(); save(); render(true); return; }
   if (a === 'fastshare') { fastShare(d.k, d.w); return; }
   if (a === 'fastsched') { fastSchedShare(); return; }
+  if (a === 'dushare') { var dx = DUHA_H[+d.i]; if (dx) shareTxt(dx[0] + '\n' + dx[1] + (dx[2] ? '\n(' + dx[2] + ')' : '')); return; }
+  if (a === 'jmshare') { shareTxt('يوم الجمعة\nاغتسل وبكّر إلى المسجد، واقرأ سورة الكهف، وأكثر من الصلاة على النبي ﷺ، وتحرَّ ساعة الإجابة.'); return; }
+  if (a === 'ssshare') { var st = ssShareText(d.k, +d.i); if (st) shareTxt(st); return; }
   if (a === 'hshare') { var hx = RC.hadith[+d.i]; if (hx) shareTxt(hadithShareText(hx)); return; }
   if (a === 'wshare') { waazShare(d.c, d.i); return; }
   if (a === 'wpages') { S.set.wird.pages = +d.v; save(); render(true); return; }
@@ -3189,7 +3433,7 @@ document.addEventListener('change', function (e) {
   if (path === 'wird.off') v = Math.max(0, Math.min(180, Math.round(v)));
   if (path === 'lat' || path === 'lng') { S.set.city = 'custom'; S.set.place = ''; }
   setPath(path, v); save();
-  if (path === 'method' || path === 'asr' || path === 'lat' || path === 'lng' || path === 'wird.freq' || path === 'wird.pages' || path === 'wird.on') setTimeout(function () { render(true); }, 0);
+  if (path === 'method' || path === 'asr' || path === 'lat' || path === 'lng' || path === 'duha.mode' || path === 'duha.on' || path === 'wird.freq' || path === 'wird.pages' || path === 'wird.on') setTimeout(function () { render(true); }, 0);
 });
 
 /* ---------- البداية ---------- */
